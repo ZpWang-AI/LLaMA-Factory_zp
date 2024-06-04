@@ -1,82 +1,201 @@
 import os
 
+from pathlib import Path as path
+from setproctitle import setproctitle
 
-class Main:
+from utils import AttrDict
+
+
+def fill_with_delimiter(s:str):
+    return f'{"="*10} {s} {"="*(30-len(s))}' if not s.startswith('='*10) else s
+
+
+class Fit(AttrDict):
     def __init__(self) -> None:
-        self.cuda = '0'
-        self.description = ''
-        self.env_name = 'zpwang_main'
-        self.exp_root_path = ''
-        self.fp16 = True
-        self.bf16 = False
+        # ========== 'base setting' ================
+        self.part1 = 'base setting'
+        self.description = 'test'
+        self.save_ckpt = False
+        self.cuda_cnt = 1
         
+        # ========== 'file path' ===================
+        self.part2 = 'file path'
+        self.root_dir = '/home/qwe/test/zpwang/LLaMA/'
+        self.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA/LLaMA-Factory/'
+        self.exp_space_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/'
+        self.log_dir = '/home/qwe/test/zpwang/LLaMA/logs/'
+        
+        # ========== 'data' ========================
+        self.part3 = 'data'
         self.dataset = ''
-        self.train_dataset = self.dataset+'_train'
-        self.eval_dataset = self.dataset+'_test'
         
+        self.data_info = {}
+        self.data_desc = ''
+        
+        # ========== 'model' =======================
+        self.part4 = 'model'
+        self.model_name = ''
         self.model_path = ''
+        
         self.template = 'qwen'
         self.lora_target = 'c_attn'
         
+        # ========== 'trainer' =====================
+        self.part5 = 'trainer'
+        self.env_name = 'zpwang_main'
+        self.fp16 = True
+        self.bf16 = False
+        
+        # ========== 'epoch, batch, step' ==========
+        self.part6 = 'epoch, batch, step'
         self.epoch = 2
         self.batch_size = 4
         self.grad_acc_step = 4
         self.lr = 5e-4
+        self.lr_scheduler_type = 'cosine'
+        self.max_test_samples = 10**7
         self.save_steps = 16000//(self.batch_size*self.grad_acc_step)
         self.logging_steps = 10
-        self.lr_scheduler_type = 'cosine'
         
-        self.max_test_samples = str(10**7)
-
-    def redirect_output(self, cmd, output_path):
-        return f'{cmd} > {output_path} 2>&1'
+        # ========== 'additional details' ==========
+        self.part7 = 'additional details'
+        self.cuda_id = ''
+        self.server_name = ''
+        self.create_time = ''
+    
+    @property
+    def version(self):
+        model_name = self.model_name.replace('-', '')
+        return '.'.join([
+            self.create_time,
+            self.data_desc,
+            self.description,
+            f'ep{self.epoch}_bs{self.batch_size}_lr{self.lr}_{model_name}'
+        ])
+    
+    def check_self(self):
+        def justify_part():    
+            for p in range(1000):
+                attr_name = f'part{p}'
+                if hasattr(self, attr_name):
+                    init_attr = self.__getattribute__(attr_name)
+                    self.__setattr__(attr_name, fill_with_delimiter(init_attr))
+        
+        def check_path():
+            self.root_dir = path(self.root_dir)
+            self.llama_factory_dir = path(self.llama_factory_dir)
+            self.exp_space_dir = path(self.exp_space_dir)
+            self.log_dir = path(self.log_dir)
+            assert path(self.root_dir).exists()
+            assert path(self.llama_factory_dir).exists()
+            (self.exp_space_dir/self.version).mkdir(parents=True, exist_ok=True)
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+        
+        def get_data_info():
+            pass
+        
+        def get_model_arg():
+            if self.model_name == 'qwen':
+                pass
+            elif self.model_name == 'llama2':
+                pass
+            raise 'wrong model_name'
+        
+        justify_part()
+        check_path()
+        get_data_info()
+        get_model_arg()
+        if not self.create_time:
+            self.set_create_time()
+        
+        pass
+    
+    def add_fp16_bf16(self, cmd):
+        assert not (self.fp16 and self.bf16)
+        if self.fp16:
+            cmd += ' --fp16'
+        elif self.bf16:
+            cmd += ' --bf16'
+        return cmd
+    
+    def redirect_output(self, cmd, log_path):
+        return f'{cmd} > {log_path} 2>&1'
 
     def nohup_cmd(self, cmd,):
         return f'nohup {cmd} &'
     
-    def train_cmd(self):
-        return f"conda run -n {self.env_name} CUDA_VISIBLE_DEVICES=${self.cuda} python src/train_bash.py \
+    def train_cmd(self, train_dataset, output_dir):
+        cmd = f'''
+conda run -n {self.env_name} \
+CUDA_VISIBLE_DEVICES={self.cuda_id} python src/train_bash.py \
     --stage sft \
     --do_train \
-    --model_name_or_path ${{{self.model_path}}} \
-    --dataset ${{{self.train_dataset}}} \
-    --template ${{{self.template}}} \
+    --model_name_or_path {self.model_path} \
+    --dataset {train_dataset} \
+    --template {self.template} \
     --finetuning_type lora \
-    --lora_target ${{{self.lora_target}}} \
-    --output_dir ${{{self.output_dir}}}/output \
+    --lora_target {self.lora_target} \
+    --output_dir {output_dir} \
     --overwrite_cache \
     --overwrite_output_dir \
-    --per_device_train_batch_size ${{{self.batch_size}}} \
-    --gradient_accumulation_steps ${{{self.grad_acc_step}}} \
-    --lr_scheduler_type ${{{self.lr_scheduler_type}}} \
-    --logging_steps ${{{self.logging_steps}}} \
-    --save_steps ${{{self.save_steps}}} \
-    --learning_rate ${{{self.lr}}} \
-    --num_train_epochs ${{{self.epoch}}} \
-    --plot_loss \
-    --fp16"
+    --per_device_train_batch_size {self.batch_size} \
+    --gradient_accumulation_steps {self.grad_acc_step} \
+    --lr_scheduler_type {self.lr_scheduler_type} \
+    --logging_steps {self.logging_steps} \
+    --save_steps {self.save_steps} \
+    --learning_rate {self.lr} \
+    --num_train_epochs {self.epoch} \
+    --plot_loss
+        '''.strip()
+        cmd = self.add_fp16_bf16(cmd)
+        return cmd
     
-    def eval_cmd(self):
-        return f"CUDA_VISIBLE_DEVICES=${{{self.cuda}}} python src/train_bash.py \
+    def eval_cmd(self, adapter_path, eval_dataset, output_dir):
+        cmd = f"""
+conda run -n {self.env_name} \
+CUDA_VISIBLE_DEVICES={self.cuda_id} python src/train_bash.py \
     --stage sft \
     --do_predict \
-    --model_name_or_path ${{{self.model_path}}} \
-    --adapter_name_or_path ${{{self.adapter_path}}}/output \
-    --dataset ${{{self.eval_dataset}}} \
-    --template ${{{self.template}}} \
+    --model_name_or_path {self.model_path} \
+    --adapter_name_or_path {adapter_path} \
+    --dataset {eval_dataset} \
+    --template {self.template} \
     --finetuning_type lora \
-    --output_dir ${{{self.output_dir}}}/output \
+    --output_dir {output_dir} \
     --per_device_eval_batch_size 1 \
-    --max_samples ${{{self.max_test_samples}}} \
-    --predict_with_generate \
-    --fp16"
-
-    def main_iteration(self):
-        cmd = [
-            self.train_cmd(),
-            self.eval_cmd(),
-            self.eval_cmd(),
-        ]
-        cmd = '\n'.join(cmd)
-        cmd = f'nohup sh -c "{cmd}"'
-        print(os.popen(cmd=cmd).read())
+    --max_samples {self.max_test_samples} \
+    --predict_with_generate
+        """.strip()
+        cmd = self.add_fp16_bf16(cmd)
+        return cmd
+    
+    def main_iteration(self, train=True, dev=True, test=True):
+        self.check_self()
+        setproctitle('zpwang-llama.'+self.version)
+        os.chdir(self.llama_factory_dir)
+        
+        cmd = []
+        # if train:
+        #     cmd.append(self.train_cmd(
+        #         train_dataset=self.dataset+'_train',
+        #         output_dir='',
+        #     ))
+        # if dev:
+        #     for _ in range():
+        #         cmd.append(self.eval_cmd(
+        #             adapter_path=,
+        #             eval_dataset=,
+        #             output_dir=,
+        #         ))
+        # if test:
+        #     cmd.append(self.eval_cmd(
+        #         adapter_path=,
+        #         eval_dataset=,
+        #         output_dir=,
+        #     ))
+        
+        cmd = '\n\n'.join(cmd)
+        log_path = path(self.log_dir)/f'{self.version}.log'
+        cmd = f'nohup sh -c "{cmd}" > {log_path} 2>&1 &'
+        print(cmd)
+        # print(os.popen(cmd=cmd).read())

@@ -12,29 +12,29 @@ class AttrDict(dict):
         self.__dict__[__name] = __value
         super().__setitem__(__name, __value)
         
-    def set_create_time(self, create_time=None):
-        if not create_time:
-            self.create_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        else:
-            self.create_time = create_time
+    def set_create_time(self, sep='-'):
+        self.create_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S').replace('-', sep)
     
-    def __repr__(self):
+    def to_json(self):
         target_dic = {}
         for k,v in self.items():
             try:
                 json.dumps(v)
                 target_dic[k] = v
                 continue
-            except:
+            except: 
                 pass
             try:
                 target_dic[k] = str(v)
                 continue
-            except:
+            except: 
                 pass
             raise TypeError(f'wrong type\n{v}: {type(v)}')
-        return json.dumps(target_dic, ensure_ascii=False, indent=4)
-
+        return target_dic
+    
+    def __repr__(self):
+        return json.dumps(self.to_json(), ensure_ascii=False, indent=4)
+    
     def _dump_json(self, json_path, overwrite=True):
         json_path = path(json_path)
         json_path.parent.mkdir(parents=True, exist_ok=True)
