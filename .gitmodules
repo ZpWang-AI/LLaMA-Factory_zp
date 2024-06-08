@@ -4,3 +4,6 @@
 [submodule "src/IDRR_data"]
 	path = src/IDRR_data
 	url = ./src/IDRR_data
+[submodule "LLaMA-Factory"]
+	path = LLaMA-Factory
+	url = ./LLaMA-Factory/

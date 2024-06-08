@@ -19,6 +19,7 @@ nohup.out
 # ==============================
 
 /*
+!/LLaMA-Factory
 !/.gitignore
 !/README.md
 !/requirements.txt
