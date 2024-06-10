@@ -3,14 +3,14 @@ import os
 from pathlib import Path as path
 from setproctitle import setproctitle
 
-from utils import AttrDict
+from utils import AttrDict, ExpArgs, make_path, load_json, dump_json
 
 
 def fill_with_delimiter(s:str):
     return f'{"="*10} {s} {"="*(30-len(s))}' if not s.startswith('='*10) else s
 
 
-class Fit(AttrDict):
+class Fit(ExpArgs):
     def __init__(self) -> None:
         # ========== 'base setting' ================
         self.part1 = 'base setting'
@@ -27,9 +27,9 @@ class Fit(AttrDict):
         
         # ========== 'data' ========================
         self.part3 = 'data'
-        self.dataset = ''
+        self.dataset_name = ''
         
-        self.data_info = {}
+        self.dataset_info = {}
         self.data_desc = ''
         
         # ========== 'model' =======================
@@ -37,8 +37,8 @@ class Fit(AttrDict):
         self.model_name = ''
         self.model_path = ''
         
-        self.template = 'qwen'
-        self.lora_target = 'c_attn'
+        self.model_template = 'qwen'
+        self.model_lora_target = 'c_attn'
         
         # ========== 'trainer' =====================
         self.part5 = 'trainer'
@@ -74,13 +74,6 @@ class Fit(AttrDict):
         ])
     
     def check_self(self):
-        def justify_part():    
-            for p in range(1000):
-                attr_name = f'part{p}'
-                if hasattr(self, attr_name):
-                    init_attr = self.__getattribute__(attr_name)
-                    self.__setattr__(attr_name, fill_with_delimiter(init_attr))
-        
         def check_path():
             self.root_dir = path(self.root_dir)
             self.llama_factory_dir = path(self.llama_factory_dir)
@@ -88,11 +81,12 @@ class Fit(AttrDict):
             self.log_dir = path(self.log_dir)
             assert path(self.root_dir).exists()
             assert path(self.llama_factory_dir).exists()
-            (self.exp_space_dir/self.version).mkdir(parents=True, exist_ok=True)
-            self.log_dir.mkdir(parents=True, exist_ok=True)
+            make_path(self.exp_space_dir/self.version)
+            make_path(self.log_dir)
         
-        def get_data_info():
-            pass
+        def get_build_dataset_info():
+            info_path = self.llama_factory_dir/'data'/'build_dataset_info.json'
+            self.dataset_info = load_json(info_path)[self.dataset_name]
         
         def get_model_arg():
             if self.model_name == 'qwen':
@@ -101,12 +95,12 @@ class Fit(AttrDict):
                 pass
             raise 'wrong model_name'
         
-        justify_part()
-        check_path()
-        get_data_info()
-        get_model_arg()
+        self.format_part()
         if not self.create_time:
             self.set_create_time()
+        check_path()
+        get_build_dataset_info()
+        get_model_arg()
         
         pass
     
@@ -132,9 +126,9 @@ CUDA_VISIBLE_DEVICES={self.cuda_id} python src/train_bash.py \
     --do_train \
     --model_name_or_path {self.model_path} \
     --dataset {train_dataset} \
-    --template {self.template} \
+    --template {self.model_template} \
     --finetuning_type lora \
-    --lora_target {self.lora_target} \
+    --lora_target {self.model_lora_target} \
     --output_dir {output_dir} \
     --overwrite_cache \
     --overwrite_output_dir \
@@ -159,7 +153,7 @@ CUDA_VISIBLE_DEVICES={self.cuda_id} python src/train_bash.py \
     --model_name_or_path {self.model_path} \
     --adapter_name_or_path {adapter_path} \
     --dataset {eval_dataset} \
-    --template {self.template} \
+    --template {self.model_template} \
     --finetuning_type lora \
     --output_dir {output_dir} \
     --per_device_eval_batch_size 1 \
