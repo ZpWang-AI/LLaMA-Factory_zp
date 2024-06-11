@@ -6,7 +6,7 @@ from copy import deepcopy
 from pathlib import Path as path
 
 from IDRR_data import IDRRDataFrames, PromptFiller
-from utils import AttrDict, ExpArgs, dump_json, load_json
+from utils_zp import AttrDict, ExpArgs, dump_json, load_json
 
 
 class BuildDataset(ExpArgs):
@@ -57,6 +57,7 @@ class BuildDataset(ExpArgs):
         self.llama_factory_dir = path(self.llama_factory_dir)
         assert self.data_path.exists()
         assert self.llama_factory_dir.exists()
+        self.format_part()
         
         dataframes = IDRRDataFrames(
             data_name=self.data_name,

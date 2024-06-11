@@ -1,0 +1,19 @@
+### model
+model_name_or_path: /home/qwe/test/pretrained_model/Llama-3-8B-Instruct
+adapter_name_or_path: /home/qwe/test/zpwang/LLaMA/exp_space/base/checkpoint-500
+
+### method
+finetuning_type: lora
+
+### dataset
+task: mmlu
+split: test
+template: fewshot
+lang: en
+n_shot: 5
+
+### output
+save_dir: /home/qwe/test/zpwang/LLaMA/exp_space/eval_test
+
+### eval
+batch_size: 4
