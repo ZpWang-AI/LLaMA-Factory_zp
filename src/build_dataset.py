@@ -1,4 +1,4 @@
-import json
+import os, sys, json
 import datetime
 
 from typing import *
@@ -88,7 +88,7 @@ class BuildDataset(ExpArgs):
         
         build_dataset_info_path = path(self.llama_factory_dir)/'data'/'build_dataset_info.json'
         if build_dataset_info_path.exists():
-            build_dataset_info = load_json(build_dataset_info)
+            build_dataset_info = load_json(build_dataset_info_path)
         else:
             build_dataset_info = {}
         build_dataset_info[self.version] = self.json
@@ -131,8 +131,40 @@ class BuildDataset(ExpArgs):
             print('add data:', processed_data_name, '\n')
         else:
             print(processed_data_name, 'exists')
+    
+    @staticmethod
+    def remove_dataset(dataset_name, llama_factory_dir):
+        data_dir = path(llama_factory_dir)/'data'
+        
+        build_dataset_info_path = data_dir/'build_dataset_info.json'
+        build_dataset_info = load_json(build_dataset_info_path)
+        if dataset_name in build_dataset_info:
+            del build_dataset_info[dataset_name]
+        dump_json(build_dataset_info, build_dataset_info_path, mode='w', indent=4)
+
+        dataset_info_path = data_dir/'dataset_info.json'
+        dataset_info = load_json(dataset_info_path)
+        for split in '.train .dev .test'.split()+['']:
+            tar_dataset_name = dataset_name+split
+            if tar_dataset_name in dataset_info:
+                del dataset_info[tar_dataset_name]
+        dump_json(dataset_info, dataset_info_path, mode='w', indent=4)
+
+        for split in '.train .dev .test'.split()+['']:
+            tar_dataset_file = dataset_name+split+'.json'
+            for file in os.listdir(data_dir):
+                if file == tar_dataset_file:
+                    os.remove(data_dir/file)
+                    print(f'remove {file}')
+            
+        
 
 # arg1 arg2 conn1 conn2 
 # conn1sense1 conn1sense2 conn2sense1 conn2sense2
 
 # BuildDataset.format_part_in_file(__file__)
+if __name__ == '__main__':
+    BuildDataset.remove_dataset(
+        dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
+        llama_factory_dir='/home/qwe/test/zpwang/LLaMA/LLaMA-Factory'
+    )
