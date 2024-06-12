@@ -1,14 +1,16 @@
 ### model
 model_name_or_path: /home/qwe/test/pretrained_model/Llama-3-8B-Instruct
+adapter_name_or_path: /home/qwe/test/zpwang/LLaMA/exp_space/baseline.old
 
 ### method
 stage: sft
-do_train: true
+do_train: false
+predict_with_generate: true
 finetuning_type: lora
 lora_target: all
 
 ### dataset
-dataset: pdtb3.top.2024_06_11_17_28_08.base.clip2048.train
+dataset: pdtb3.top.2024_06_11_21_41_36.base.clip2048
 template: llama3
 cutoff_len: 2048
 max_samples: 1000000000
