@@ -48,7 +48,6 @@ class BuildDataset(ExpArgs):
             self.data_level,
             self.create_time,
             self.desc,
-            f'clip{self.max_seq_length}'
         ]
         return '.'.join(info_list).replace('-', '_')
     
@@ -66,9 +65,12 @@ class BuildDataset(ExpArgs):
             data_path=self.data_path,
         )
         
-        train_prompt = self.prompt['train'] if 'train' in self.prompt else self.prompt
-        eval_prompt = self.prompt['eval'] if 'eval' in self.prompt else self.prompt
-
+        if 'train' in self.prompt and 'pred' in self.prompt:
+            train_prompt = self.prompt['train']
+            pred_prompt = self.prompt['pred']
+        else:
+            train_prompt = pred_prompt = self.prompt
+            
         self.build_single_dataset(
             processed_data=PromptFiller(
                 df=dataframes.train_df,
@@ -76,15 +78,20 @@ class BuildDataset(ExpArgs):
             ).list,
             processed_data_name=self.version+'.train'
         )
-        
-        for split in 'dev test'.split():
-            self.build_single_dataset(
-                processed_data=PromptFiller(
-                    df=dataframes.get_dataframe(split=split),
-                    prompt=eval_prompt,
-                ).list,
-                processed_data_name=f'{self.version}.{split}'
-            )
+        self.build_single_dataset(
+            processed_data=PromptFiller(
+                df=dataframes.dev_df,
+                prompt=train_prompt,
+            ).list,
+            processed_data_name=self.version+'.dev'
+        )
+        self.build_single_dataset(
+            processed_data=PromptFiller(
+                df=dataframes.test_df,
+                prompt=pred_prompt,
+            ).list,
+            processed_data_name=self.version+'.test'
+        )
         
         build_dataset_info_path = path(self.llama_factory_dir)/'data'/'build_dataset_info.json'
         if build_dataset_info_path.exists():
