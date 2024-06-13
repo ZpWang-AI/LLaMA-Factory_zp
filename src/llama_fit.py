@@ -37,7 +37,7 @@ class LLaMAFit(ExpArgs):
         self.val_size = 0
         self.per_device_eval_batch_size = 1
         self.eval_strategy = 'steps'
-        self.eval_steps = 500
+        self.eval_steps = 1000
     
     def start(self, cuda_id, llamafactory_path='.'):
         os.chdir(llamafactory_path)
@@ -51,6 +51,8 @@ class LLaMAFit(ExpArgs):
 
         arg_yaml_path = self.output_dir/'fit_arg.yaml'
         self.dump_yaml(arg_yaml_path)
+        
+        self.eval_steps = self.save_steps
         
         cmd = f"""
         CUDA_VISIBLE_DEVICES={cuda_id} llamafactory-cli train {arg_yaml_path}
