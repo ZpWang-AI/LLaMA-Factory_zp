@@ -10,7 +10,7 @@ elif SERVER_NAME == 'SGA100':
     ROOT_DIR = '/public/home/hongy/zpwang/IDRR_ConnT5/'
     PRETRAINED_MODEL_DIR = '/public/home/hongy/pretrained_models/'
 elif SERVER_NAME == 't2s':
-    ROOT_DIR = '/home/qwe/test/zpwang/Trainer'
+    ROOT_DIR = '/home/qwe/test/zpwang/LLaMA'
     PRETRAINED_MODEL_DIR = '/home/qwe/test/pretrained_model/'
 else:
     raise Exception('wrong ROOT_DIR')
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     sample.data_relation = 'Implicit'
 
     sample.data_path = '/home/qwe/test/zpwang/Trainer/data/used/pdtb3.p1.csv'
-    sample.llama_factory_dir = ROOT_DIR+'LLaMA-Factory/'
+    sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
     sample.max_seq_length = 2048
