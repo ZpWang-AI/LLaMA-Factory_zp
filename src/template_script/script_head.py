@@ -16,6 +16,8 @@ else:
     raise Exception('wrong ROOT_DIR')
 
 from utils_zp.common_import import *
+from utils_zp import set_process_title
+set_process_title('llama', add_time=True)
 
 BRANCH = 'main'
 CODE_SPACE = ROOT_DIR+'src/'
