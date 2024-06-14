@@ -15,6 +15,7 @@ echo $torun_file
 echo "start running"
 
 # source activate zpwang_llama
+export MKL_SERVICE_FORCE_INTEL=1
 nohup /home/qwe/miniconda3/envs/zpwang_llama/bin/python $torun_file > "${log_dir}/${start_time}.${filename}.log" 2>&1 &
 # CUDA_VISIBLE_DEVICES=1 llamafactory-cli chat $torun_file
 
