@@ -102,6 +102,10 @@ class BuildDataset(ExpArgs):
         dump_json(build_dataset_info, build_dataset_info_path, mode='w', indent=4)
             
     def build_single_dataset(self, processed_data:List[Dict[str, str]], processed_data_name):
+        processed_data = [
+            ppd for ppd in processed_data if ppd['output'] 
+        ]
+        
         if self.max_seq_length:
             def clip_func(piece_of_data):
                 for k, v in piece_of_data.items():
@@ -135,7 +139,8 @@ class BuildDataset(ExpArgs):
                 }
             }
             dump_json(dataset_info, dataset_info_path, mode='w', indent=4)
-            print('add data:', processed_data_name, '\n')
+            print('add data:', processed_data_name,)
+            print(len(processed_data), '\n')
         else:
             print(processed_data_name, 'exists')
     
