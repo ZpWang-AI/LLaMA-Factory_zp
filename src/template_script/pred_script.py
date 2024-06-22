@@ -27,7 +27,7 @@ if __name__ == "__main__":
     main.num_train_epochs = 5
     
     main.template = 'llama3'
-    main.cutoff_len = 2048
+    main.cutoff_len = 1024
     main.max_samples
     main.logging_steps = 10
     main.save_steps = 1000
