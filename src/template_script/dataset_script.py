@@ -88,7 +88,7 @@ if __name__ == '__main__':
     sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
-    sample.max_seq_length = 2048
+    sample.max_seq_length = 1024
 
     sample.desc = 'base'
     
