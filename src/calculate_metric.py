@@ -1,5 +1,7 @@
 from utils_zp.common_import import *
 
+import pandas as pd
+
 from sklearn.metrics import (
     classification_report,
     precision_recall_fscore_support, 
@@ -7,16 +9,24 @@ from sklearn.metrics import (
 )
 
 from utils_zp import postprocess_generation_res_to_lid, load_json, dump_json
+from IDRR_data import IDRRDataFrames
 
 
-def calculate_metric(target_dir):
+def get_gt_dic(gt_df:pd.DataFrame, gt_column_name):
+    return dict(zip(gt_df['data_id'], gt_df[gt_column_name]))
+
+
+def calculate_metric(target_dir, gt_dic):
     target_dir = path(target_dir)
     generated_predictions = target_dir/'generated_predictions.jsonl'
     pred, gt = [], []
     for line in load_json(generated_predictions):
         pred.append(line['predict'])
         # gt.append(line['label'])
-        gt.append(line['label'].split(',')[0])
+        gt.append(
+            gt_dic[int(line['label'])]
+        )
+    
     postprocessed = postprocess_generation_res_to_lid(
         pred=pred, 
         gt=gt, 
@@ -47,7 +57,7 @@ def calculate_metric(target_dir):
     ))
     res_dic = {
         'macro-f1': cls_report['macro avg']['f1-score'],
-        'yes_precision': cls_report['yes']['precision'],
+        # 'yes_precision': cls_report['yes']['precision'],
         'confusion_matrix': confusion_mat.tolist(),
         'cls_report': cls_report,
     }
@@ -55,14 +65,31 @@ def calculate_metric(target_dir):
 
 
 if __name__ == '__main__':
+    gt_dic = get_gt_dic(
+        IDRRDataFrames(
+            data_name='pdtb3',
+            data_level='top', data_relation='Implicit',
+            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
+        ).test_df,
+        'label11'
+    )
     for dir in '''
-    /home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5
-    /home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-21-57-37.filter.ckpt4000.bs1*8_lr0.0001_ep5
-    /home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-22-09-54-06.filter.ckpt6000.bs1*8_lr0.0001_ep5
-    /home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-22-09-54-36.filter.ckpt8000.bs1*8_lr0.0001_ep5
-    /home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-22-09-55-00.filter.ckptfinal.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-18-57.main_distill_all.ckptfinal.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-21-06.main_distill_all.ckpt2000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-21-59.main_distill_all.ckpt4000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-22-24.main_distill_all.ckpt6000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-22-42.main_distill_all.ckpt8000.bs1*8_lr0.0001_ep5
+
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-40-31.main_distill_hf.ckptfinal.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-41-21.main_distill_hf.ckpt2000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-41-43.main_distill_hf.ckpt4000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-42-06.main_distill_hf.ckpt6000.bs1*8_lr0.0001_ep5
+/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-42-36.main_distill_hf.ckpt8000.bs1*8_lr0.0001_ep5
+
+
+
     '''.split():
         dir = dir.strip()
         if dir:
-            calculate_metric(dir)
+            calculate_metric(dir, gt_dic)
     # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
