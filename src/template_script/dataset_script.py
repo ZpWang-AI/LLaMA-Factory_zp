@@ -33,46 +33,6 @@ class PromptMaker:
         }
         return {'train': train_prompt, 'pred': pred_prompt}
         
-    @staticmethod
-    def prompt_preference():
-        # {
-        #     "instruction": "user instruction",
-        #     "input": "user input",
-        #     "output": [
-        #         "chosen answer",
-        #         "rejected answer"
-        #     ]
-        # }
-        return {
-            "instruction": "Figure out the relation between the pair of arguments. The answer should be one of (Expansion, Temporary, Contingency and Comparison).",
-            "input": 'The first argument is\n\n{arg1}\n\nThe second argument is\n\n{arg2}',
-            "output": [
-                "{conn1sense1}",
-                "I don't know.",
-            ],
-            "system": "",
-            "history": []
-        }
-        
-    @staticmethod
-    def prompt_sharegpt():
-        # {
-        #     "conversations": [
-        #         {
-        #         "from": "human",
-        #         "value": "user instruction"
-        #         },
-        #         {
-        #         "from": "gpt",
-        #         "value": "model response"
-        #         }
-        #     ],
-        #     "system": "system prompt (optional)",
-        #     "tools": "tool description (optional)"
-        # }
-        return {
-            
-        }
     
     
 if __name__ == '__main__':
