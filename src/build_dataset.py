@@ -68,30 +68,38 @@ class BuildDataset(ExpArgs):
         if 'train' in self.prompt and 'pred' in self.prompt:
             train_prompt = self.prompt['train']
             pred_prompt = self.prompt['pred']
+            self.build_single_dataset(
+                processed_data=PromptFiller(
+                    df=dataframes.train_df,
+                    prompt=train_prompt,
+                ).list,
+                processed_data_name=self.version+'.train'
+            )
+            self.build_single_dataset(
+                processed_data=PromptFiller(
+                    df=dataframes.dev_df,
+                    prompt=train_prompt,
+                ).list,
+                processed_data_name=self.version+'.dev'
+            )
+            self.build_single_dataset(
+                processed_data=PromptFiller(
+                    df=dataframes.test_df,
+                    prompt=pred_prompt,
+                ).list,
+                processed_data_name=self.version+'.test'
+            )
+        elif 'pred' in self.prompt:
+            pred_prompt = self.prompt['pred']
+            self.build_single_dataset(
+                processed_data=PromptFiller(
+                    df=dataframes.test_df,
+                    prompt=pred_prompt,
+                ).list,
+                processed_data_name=self.version+'.pred'
+            )
         else:
-            train_prompt = pred_prompt = self.prompt
-            
-        self.build_single_dataset(
-            processed_data=PromptFiller(
-                df=dataframes.train_df,
-                prompt=train_prompt,
-            ).list,
-            processed_data_name=self.version+'.train'
-        )
-        self.build_single_dataset(
-            processed_data=PromptFiller(
-                df=dataframes.dev_df,
-                prompt=train_prompt,
-            ).list,
-            processed_data_name=self.version+'.dev'
-        )
-        self.build_single_dataset(
-            processed_data=PromptFiller(
-                df=dataframes.test_df,
-                prompt=pred_prompt,
-            ).list,
-            processed_data_name=self.version+'.test'
-        )
+            raise Exception('train&pred or pred in self.prompt')
         
         build_dataset_info_path = path(self.llama_factory_dir)/'data'/'build_dataset_info.json'
         if build_dataset_info_path.exists():
@@ -162,12 +170,13 @@ class BuildDataset(ExpArgs):
                 del dataset_info[tar_dataset_name]
         dump_json(dataset_info, dataset_info_path, mode='w', indent=4)
 
-        for split in '.train .dev .test'.split()+['']:
-            tar_dataset_file = dataset_name+split+'.json'
-            for file in os.listdir(data_dir):
-                if file == tar_dataset_file:
-                    os.remove(data_dir/file)
-                    print(f'remove {file}')
+        for split in '.train .dev .test .pred'.split()+['']:
+            tar_dataset_file:str = dataset_name+split+'.json'
+            tar_dataset_file:path = data_dir/tar_dataset_file
+            if tar_dataset_file.exists():
+                os.remove(tar_dataset_file)
+                print(f'remove {tar_dataset_file.stem}')
+
             
         
 
