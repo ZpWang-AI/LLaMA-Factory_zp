@@ -43,10 +43,14 @@ class LLaMAFit(ExpArgs):
         os.chdir(llamafactory_path)
         
         self.model_name_or_path = path(self.model_name_or_path)
+        dataset_info_path = path('data')/'dataset_info.json'
         build_dataset_info_path = path('data')/'build_dataset_info.json'
         self.output_dir = path(self.output_dir)/self.version
         assert self.model_name_or_path.exists()
-        assert self.dataset in load_json(build_dataset_info_path)
+        if self.do_train:
+            assert self.dataset in load_json(build_dataset_info_path)
+        else:
+            assert self.dataset in load_json(dataset_info_path)
         make_path(dir_path=self.output_dir)
 
         arg_yaml_path = self.output_dir/'fit_arg.yaml'
