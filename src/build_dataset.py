@@ -16,6 +16,7 @@ class BuildDataset(ExpArgs):
         self.data_name = 'pdtb3'
         self.data_level = 'level1'
         self.data_relation = 'Implicit'
+        self.data_split = ''
 
         # ========== 'path' ========================
         self.part2 = 'path'
@@ -90,10 +91,11 @@ class BuildDataset(ExpArgs):
                 processed_data_name=self.version+'.test'
             )
         elif 'pred' in self.prompt:
+            assert self.data_split in 'train dev test all'.split()
             pred_prompt = self.prompt['pred']
             self.build_single_dataset(
                 processed_data=PromptFiller(
-                    df=dataframes.test_df,
+                    df=dataframes.get_dataframe(split=self.data_split),
                     prompt=pred_prompt,
                 ).list,
                 processed_data_name=self.version+'.pred'
@@ -151,7 +153,7 @@ class BuildDataset(ExpArgs):
             print(len(processed_data), '\n')
         else:
             print(processed_data_name, 'exists')
-    
+
     @staticmethod
     def remove_dataset(dataset_name, llama_factory_dir):
         data_dir = path(llama_factory_dir)/'data'
