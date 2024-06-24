@@ -20,7 +20,7 @@ class PromptMaker:
                 # ["The first argument is\n\nBach's \"Air\" followed\n\nThe second argument is\n\nMr. Stoltzman tied the composer in by proclaiming him \"the great improviser of the 18th century", 'Temporal'],
             ]
         }
-        pred_prompt = train_prompt
+        pred_prompt = dcopy(train_prompt)
         pred_prompt['output'] = '{data_id}'
         return {'train': train_prompt, 'pred': pred_prompt}
         
