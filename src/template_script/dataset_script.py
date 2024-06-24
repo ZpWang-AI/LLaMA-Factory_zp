@@ -23,7 +23,7 @@ class PromptMaker:
         pred_prompt = {
             "instruction": 'Argument 1:\n{arg1}\n\nArgument 2:\n{arg2}\n\nQuestion: What is the discourse relation between Argument 1 and Argument 2?\nA. Comparison\nB. Contingency\nC. Expansion\nD. Temporal\n\nAnswer:',
             "input": "",
-            "output": "{label11},{label12},{label21},{label22}",
+            "output": "{data_id}",
             "system": "",
             # "system": "The task is to determine whether they have a temporal, comparative, contingency, or extensional relationship. This analysis should consider both implicit and explicit relationships.",
             "history": [
@@ -83,14 +83,17 @@ if __name__ == '__main__':
     sample.data_name = 'pdtb3'
     sample.data_level = 'top'
     sample.data_relation = 'Implicit'
+    # sample.data_split = ''
 
+    # ==================
+    sample.desc = 'base'
     sample.data_path = '/home/qwe/test/zpwang/Trainer/data/used/pdtb3.p1.csv'
+    # ==================
+
     sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
     sample.max_seq_length = 1024
-
-    sample.desc = 'base'
     
     sample.start()
     
