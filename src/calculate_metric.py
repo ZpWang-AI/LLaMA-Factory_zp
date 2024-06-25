@@ -19,6 +19,8 @@ def get_gt_dic(gt_df:pd.DataFrame, gt_column_name):
 def calculate_metric(target_dir, gt_dic):
     target_dir = path(target_dir)
     generated_predictions = target_dir/'generated_predictions.jsonl'
+    if not generated_predictions.exists():
+        return
     pred, gt = [], []
     for line in load_json(generated_predictions):
         pred.append(line['predict'])
@@ -73,23 +75,8 @@ if __name__ == '__main__':
         ).test_df,
         'label11'
     )
-    for dir in '''
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-18-57.main_distill_all.ckptfinal.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-21-06.main_distill_all.ckpt2000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-21-59.main_distill_all.ckpt4000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-22-24.main_distill_all.ckpt6000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all/2024-06-24-17-22-42.main_distill_all.ckpt8000.bs1*8_lr0.0001_ep5
-
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-40-31.main_distill_hf.ckptfinal.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-41-21.main_distill_hf.ckpt2000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-41-43.main_distill_hf.ckpt4000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-42-06.main_distill_hf.ckpt6000.bs1*8_lr0.0001_ep5
-/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_hf/2024-06-24-17-42-36.main_distill_hf.ckpt8000.bs1*8_lr0.0001_ep5
-
-
-
-    '''.split():
-        dir = dir.strip()
+    for dir in os.listdir('/home/qwe/test/zpwang/LLaMA/exp_space/Main_subtext_init'):
+        dir = path('/home/qwe/test/zpwang/LLaMA/exp_space/Main_subtext_init')/dir
         if dir:
             calculate_metric(dir, gt_dic)
     # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
