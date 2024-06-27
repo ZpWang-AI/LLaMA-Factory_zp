@@ -75,8 +75,8 @@ if __name__ == '__main__':
         ).test_df,
         'label11'
     )
-    for dir in os.listdir('/home/qwe/test/zpwang/LLaMA/exp_space/Main_subtext_init'):
-        dir = path('/home/qwe/test/zpwang/LLaMA/exp_space/Main_subtext_init')/dir
-        if dir:
-            calculate_metric(dir, gt_dic)
+    root_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_llama_init'
+    for dir in os.listdir(root_dir):
+        dir = path(root_dir)/dir
+        calculate_metric(dir, gt_dic)
     # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
