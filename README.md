@@ -21,7 +21,11 @@ User:
 
     Answer:
 Bot:
-    {label}
+    {label and analysis}
+User:
+    Just output the answer directly.
+Bot:
+    {pure label}
 
 * 蒸馏潜台词
 

@@ -179,15 +179,32 @@ class BuildDataset(ExpArgs):
                 os.remove(tar_dataset_file)
                 print(f'remove {tar_dataset_file.stem}')
 
-            
-        
+    @staticmethod
+    def rebuild_dataset_info(llama_factory_dir):
+        data_dir = path(llama_factory_dir)/'data'
+        dataset_info = {}
+        for file in sorted(os.listdir(data_dir)):
+            dataset_name = path(file).stem
+            dataset_info[dataset_name] = {
+                'file_name': str(data_dir/file),
+                "columns": {
+                    "prompt": "instruction",
+                    "query": "input",
+                    "response": "output",
+                    "system": "system",
+                    "history": "history"
+                }
+            }
+        dump_json(dataset_info, data_dir/'dataset_info.json')
+        print('dump to', data_dir/'dataset_info.json')
 
 # arg1 arg2 conn1 conn2 
 # conn1sense1 conn1sense2 conn2sense1 conn2sense2
 
 # BuildDataset.format_part_in_file(__file__)
 if __name__ == '__main__':
-    BuildDataset.remove_dataset(
-        dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
-        llama_factory_dir='/home/qwe/test/zpwang/LLaMA/LLaMA-Factory'
-    )
+    # BuildDataset.remove_dataset(
+    #     dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
+    #     llama_factory_dir='/home/qwe/test/zpwang/LLaMA/LLaMA-Factory'
+    # )
+    BuildDataset.rebuild_dataset_info('/home/qwe/test/zpwang/LLaMA-Factory')
