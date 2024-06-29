@@ -14,19 +14,23 @@ from llama_fit import LLaMAFit
 if __name__ == "__main__":
     main = LLaMAFit()
     main.model_name_or_path = '/home/qwe/test/pretrained_model/Llama-3-8B-Instruct'
-    main.adapter_name_or_path = ''
+    main.template = 'llama3'
+    
+    # =====
+    desc = 'base'
+    ckpt = '2000'
+    main.adapter_name_or_path = f'/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_tunehparam/2024-06-28-16-25-03.Main_distill_all_tunehparam.bs1*8_lr5e-05_ep7/checkpoint-{ckpt}'
     main.dataset = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
+    # =====
+    
     main.output_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/'
     llamafactory_path = '/home/qwe/test/zpwang/LLaMA-Factory'
-    desc = 'base'
-    ckpt = 'final'
     
     main.per_device_eval_batch_size = 1
     main.gradient_accumulation_steps = 8
     main.learning_rate = 1e-4
     main.num_train_epochs = 5
     
-    main.template = 'llama3'
     main.cutoff_len = 1024
     main.max_samples
     main.logging_steps = 10
