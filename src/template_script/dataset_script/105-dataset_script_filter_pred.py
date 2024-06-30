@@ -1,0 +1,68 @@
+from script_head import *
+
+# ===== import =====
+from build_dataset import BuildDataset
+
+# arg1 arg2 conn1 conn2 
+# conn1sense1 conn1sense2 conn2sense1 conn2sense2
+class PromptMaker:
+    
+    @staticmethod
+    def prompt_alpaca():
+        train_prompt = {
+            "instruction": """
+Argument 1:
+{arg1}
+
+Argument 2:
+{arg2}
+
+Implicit meaning:
+{subtext}
+
+Is this implicit meaning helpful to figure out the discourse relation between Argument 1 and Argument 2?
+
+Answer:
+""".strip(),
+            "input": "",
+            "output": "{subtext_res_yn}",
+            "system": "",
+            # "system": "The task is to determine whether they have a temporal, comparative, contingency, or extensional relationship. This analysis should consider both implicit and explicit relationships.",
+            "history": [
+                # ['The first argument is\n\nHis recent appearance at the Metropolitan Museum, dubbed \"A Musical Odyssey,\" was a case in point\n\nThe second argument is\n\nIt felt more like a party, or a highly polished jam session with a few friends, than a classical concert', 'Expansion'],
+                # ["The first argument is\n\nBach's \"Air\" followed\n\nThe second argument is\n\nMr. Stoltzman tied the composer in by proclaiming him \"the great improviser of the 18th century", 'Temporal'],
+            ]
+        }
+        pred_prompt = dcopy(train_prompt)
+        pred_prompt['output'] = '{data_id}'
+        return {'pred': pred_prompt}
+        
+    
+    
+if __name__ == '__main__':
+    prompt = PromptMaker.prompt_alpaca()
+    print(prompt)
+    print()
+    sample = BuildDataset()
+    sample.data_name = 'pdtb3'
+    sample.data_level = 'top'
+    sample.data_relation = 'Implicit'
+    sample.data_split = 'all'
+
+    # ==================
+    sample.desc = 'filter_distill_hf'
+    sample.data_path = '/home/qwe/test/zpwang/IDRR_data/data/dataBuild/pdtb3_top_implicit.subtext_distill.llama_distill_hf.csv'
+    # ==================
+
+    sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
+    
+    sample.prompt = prompt
+    sample.max_seq_length = 1024
+    
+    sample.start()
+    
+    # BuildDataset.remove_dataset(
+    #     'pdtb3.top.2024_06_24_18_08_33.filter_distill_hf.pred',
+    #     llama_factory_dir='/home/qwe/test/zpwang/LLaMA-Factory'
+    # )
+    
