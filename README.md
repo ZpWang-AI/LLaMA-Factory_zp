@@ -1,4 +1,4 @@
-Prompt
+# Prompt
 
 * GPT 生成潜台词
 
@@ -78,3 +78,60 @@ Input:
     Answer:
 Output:
     {label}
+
+## Options
+
+* top-level
+
+A. Comparison
+B. Contingency
+C. Expansion
+D. Temporal
+
+* pdtb2 second-level
+
+A. Comparison.Concession
+B. Comparison.Contrast
+C. Contingency.Cause
+D. Contingency.Pragmatic cause
+E. Expansion.Alternative
+F. Expansion.Conjunction
+G. Expansion.Instantiation
+H. Expansion.List
+I. Expansion.Restatement
+J. Temporal.Asynchronous
+K. Temporal.Synchrony
+
+* pdtb3 second-level
+
+A. Comparison.Concession
+B. Comparison.Contrast
+C. Comparison.Similarity
+D. Contingency.Cause
+E. Contingency.Condition
+F. Contingency.Purpose
+G. Expansion.Conjunction
+H. Expansion.Equivalence
+I. Expansion.Instantiation
+J. Expansion.Level-of-detail
+K. Expansion.Manner
+L. Expansion.Substitution
+M. Temporal.Asynchronous
+N. Temporal.Synchronous
+
+* CoNLL16
+
+A. Comparison.Concession
+B. Comparison.Contrast
+C. Contingency.Cause.Reason
+D. Contingency.Cause.Result
+E. Contingency.Condition
+F. Expansion.Alternative
+G. Expansion.Alternative.Chosen alternative
+H. Expansion.Conjunction
+I. Expansion.Exception
+J. Expansion.Instantiation
+K. Expansion.Restatement
+L. Temporal.Asynchronous.Precedence
+M. Temporal.Asynchronous.Succession
+N. Temporal.Synchrony
