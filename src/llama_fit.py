@@ -61,10 +61,10 @@ class LLaMAFit(ExpArgs):
             assert self.dataset in load_json(dataset_info_path)
         make_path(dir_path=self.output_dir)
 
+        self.eval_steps = self.save_steps
+        
         arg_yaml_path = self.output_dir/'fit_arg.yaml'
         self.dump_yaml(arg_yaml_path)
-        
-        self.eval_steps = self.save_steps
         
         cmd = f"""
         CUDA_VISIBLE_DEVICES={cuda_id} llamafactory-cli train {arg_yaml_path}
