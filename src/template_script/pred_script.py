@@ -21,7 +21,12 @@ if __name__ == "__main__":
     ckpt = '2000'
     main.adapter_name_or_path = f'/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_tunehparam/2024-06-28-16-25-03.Main_distill_all_tunehparam.bs1*8_lr5e-05_ep7/checkpoint-{ckpt}'
     main.dataset = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
+    main._extra_setting.rest_mem_mb = 10**5
+    main._extra_setting.wait_befor_start = 3
     # =====
+    
+    main._extra_setting.output_scores = True
+    main._extra_setting.do_dev = False
     
     main.output_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/'
     llamafactory_path = '/home/qwe/test/zpwang/LLaMA-Factory'

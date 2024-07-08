@@ -2,6 +2,15 @@ from utils_zp import ExpArgs, make_path, load_json
 from utils_zp.common_import import *
 
 
+class ExtraSetting(ExpArgs):
+    def __init__(self) -> None:
+        self.rest_mem_mb = 10000
+        self.wait_befor_start = 3
+        
+        self.output_scores = True
+        self.do_dev = False
+    
+
 class LLaMAFit(ExpArgs):
     def __init__(self) -> None:
         # model
@@ -46,6 +55,9 @@ class LLaMAFit(ExpArgs):
         self.per_device_eval_batch_size = 1
         self.eval_strategy = 'steps'
         self.eval_steps = 1000
+        
+        # additional_setting
+        self._extra_setting = ExtraSetting()
     
     def start(self, cuda_id, llamafactory_path='.'):
         os.chdir(llamafactory_path)
@@ -65,6 +77,7 @@ class LLaMAFit(ExpArgs):
         
         arg_yaml_path = self.output_dir/'fit_arg.yaml'
         self.dump_yaml(arg_yaml_path)
+        self._extra_setting.dump_json(self.output_dir/'extra_setting.json')
         
         cmd = f"""
         CUDA_VISIBLE_DEVICES={cuda_id} llamafactory-cli train {arg_yaml_path}
