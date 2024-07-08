@@ -73,7 +73,10 @@ class LLaMAFit(ExpArgs):
             assert self.dataset in load_json(dataset_info_path)
         make_path(dir_path=self.output_dir)
 
-        self.eval_steps = self.save_steps
+        if self._extra_setting.do_dev:
+            self.eval_steps = self.save_steps
+        else:
+            self.eval_steps = 10**10
         
         arg_yaml_path = self.output_dir/'fit_arg.yaml'
         self.dump_yaml(arg_yaml_path)

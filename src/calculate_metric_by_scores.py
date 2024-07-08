@@ -1,6 +1,7 @@
 from utils_zp.common_import import *
 
 import pandas as pd
+import numpy as np
 
 from sklearn.metrics import (
     classification_report,
@@ -8,58 +9,53 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
-from utils_zp import postprocess_generation_res_to_lid, load_json, dump_json
+from utils_zp import postprocess_generation_res_to_lid, load_json, dump_json, build_dict_from_df_or_dicts
 from IDRR_data import IDRRDataFrames
 
 
-def get_gt_dic(gt_df:pd.DataFrame, gt_column_name):
-    return dict(zip(gt_df['data_id'], gt_df[gt_column_name]))
-
-
-def calculate_metric(target_dirs, gt_dic):
-    gt = []
-    preds = []
-    for target_dir in target_dirs:
-        target_dir = path(target_dir)
-        generated_predictions = target_dir/'generated_predictions.jsonl'
-        if not generated_predictions.exists():
-            return
-        cur_pred = []
-        for line in load_json(generated_predictions):
-            cur_pred.append(line['predict'])
-        preds.append(cur_pred)
-        
-        if not gt:
-            if str(load_json(generated_predictions)[0]['label']).isnumeric():
-                for line in load_json(generated_predictions):
-                    gt.append(
-                        gt_dic[int(line['label'])]
-                    )
-            else:
-                for line in load_json(generated_predictions):
-                    gt.append(
-                        line['label'].split(',')[0]
-                    )
-    
-    postprocessed_gt = postprocess_generation_res_to_lid(
-        gt=gt, match_strategy='complete'
+def calculate_metric(
+    score_dir, rest_dir, 
+    dfs:IDRRDataFrames, split, 
+    confidence_score_threshold: Union[List[float], Dict[int, float]],
+):
+    score_dir = path(score_dir)
+    rest_dir = path(rest_dir)
+    df = dfs.get_dataframe(split)
+    scores_dict = build_dict_from_df_or_dicts(
+        load_json(score_dir/'generated_scores.jsonl'),
+        key_col_name='label', val_col_name='scores'
     )
-    gt = postprocessed_gt['gt']
-    label_list = postprocessed_gt['label_list']
-    preds = [
-        postprocess_generation_res_to_lid(
-            pred=pred, label_list=label_list, 
-            match_strategy='complete', lower_results=False,
-        )['pred']
-        for pred in preds
-    ]
+    pred_dict_score = build_dict_from_df_or_dicts(
+        load_json(score_dir/'generated_predictions.jsonl'),
+        key_col_name='label', val_col_name='predict'
+    )
+    pred_dict_rest = build_dict_from_df_or_dicts(
+        load_json(rest_dir/'generated_predictions.jsonl'),
+        key_col_name='label', val_col_name='predict'
+    )
+    gt_dict = build_dict_from_df_or_dicts(
+        df, key_col_name='data_id', val_col_name='label11', make_key_str=True,
+    )
+    postprocessed_gt = postprocess_generation_res_to_lid(
+        pred=pred_dict_score, gt=gt_dict, label_list=dfs.label_list, 
+        match_strategy='first exists', lower_results=True,
+    )
+    pred_dict_score = postprocessed_gt['pred']
+    gt_dict = postprocessed_gt['gt']
+    pred_dict_rest = postprocess_generation_res_to_lid(
+        pred=pred_dict_rest, label_list=dfs.label_list, 
+        match_strategy='first exists', lower_results=True,
+    )['pred']
+    label_list = dfs.label_list
+    assert sorted(pred_dict_score.keys())==sorted(pred_dict_rest.keys())==sorted(gt_dict.keys())==sorted(scores_dict.keys())
     
-    pred = []
-    for cur_preds, cur_gt in zip(zip(*preds), gt):
-        if cur_gt in cur_preds:
-            pred.append(cur_gt)
+    gt, pred = [], []
+    for data_id in gt_dict:
+        gt.append(gt_dict[data_id])
+        if np.mean(scores_dict[data_id]) < confidence_score_threshold[pred_dict_score[data_id]]:
+            pred.append(pred_dict_rest[data_id])
         else:
-            pred.append(cur_preds[-1])
+            pred.append(pred_dict_score[data_id])
 
     # TODO
     confusion_mat = confusion_matrix(
@@ -91,20 +87,18 @@ def calculate_metric(target_dirs, gt_dic):
 
 
 if __name__ == '__main__':
-    gt_dic = get_gt_dic(
-        IDRRDataFrames(
-            data_name='pdtb3',
-            data_level='top', data_relation='Implicit',
-            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
-        ).test_df,
-        'label11'
+    calculate_metric(
+        score_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-10-45-02.main_base.ckpt5000.bs1*8_lr0.0001_ep5',
+        rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
+        dfs=IDRRDataFrames(
+            data_name='pdtb3', data_level='top', data_relation='Implicit',
+            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+        ),
+        split='test',
+        confidence_score_threshold=[
+            30.49,
+            35.67,
+            30.89,
+            30.78
+        ],
     )
-    calculate_metric(gt_dic=gt_dic, target_dirs=[
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-00-00.base_pred.ckptfinal.bs1*8_lr0.0001_ep5',
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-32-07.base_pred.ckpt4000.bs1*8_lr0.0001_ep5',
-        # '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-33-17.base_pred.ckpt8000.bs1*8_lr0.0001_ep5',
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-11-14-18.base_pred.ckpt8000.bs1*8_lr0.0001_ep5'
-        
-        # '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_distill_all/2024-06-24-17-22-42.main_distill_all.ckpt8000.bs1*8_lr0.0001_ep5'
-    ])
-    # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
