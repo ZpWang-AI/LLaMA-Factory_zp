@@ -41,16 +41,28 @@ class ConfidenceScoresEvaluator:
         print(processed_res['label_list'])
         # assert len(pred_dict)==len(gt_dict)==len(self.scores_dict)
     
-    def draw(self):
+    def draw(self, target_acc_list=None):
+        if target_acc_list:
+            thresholds_res = self.get_thresholds(target_acc_list, show=False)
+            conf_score_thresholds = thresholds_res['conf_score_thresholds']
+            threshold_pids = thresholds_res['threshold_pids']
+        
         fig, ax_list = plt.subplots(nrows=4,ncols=1,figsize=(8,4.8*4))
         plt.subplots_adjust(hspace=0.5)
         for lid, label in enumerate(self.label_list):
             cur_ax = ax_list[lid]
-            self._draw_confidence_score_acc(
+            cnt = self._draw_confidence_score_acc(
                 **self._get_target_confidence_score_correctness(target=lid),
-                ax=cur_ax
+                ax=cur_ax,
             )
             cur_ax.set_title(f'{label}')
+            
+            tx, ty = threshold_pids[lid], target_acc_list[lid]
+            tx = tx/cnt
+            # cur_ax.plot(tx, ty, marker='o')
+            # cur_ax.text(tx, ty, str(conf_score_thresholds[lid]))
+            # cur_ax.axvline(tx, ymax=ty/cur_ax.get_ylim()[1], ymin=0)
+            # cur_ax.axhline(ty, xmax=tx/cur_ax.get_xlim()[1], xmin=0)
         plt.savefig(self.target_res_dir/f'confidence_score.png')
 
     def _get_target_confidence_score_correctness(self, target):
@@ -94,13 +106,20 @@ class ConfidenceScoresEvaluator:
         def draw_by_gap(gap, label):
             nx,ny = [],[]
             for p in range(0,cnt,gap):
-                cx = p
+                cx = p/cnt
                 cy = np.mean(acc[p:p+gap])
                 nx.append(cx)
                 ny.append(cy)
+            
+            cut_len = len(nx)//10
+            nx = nx[cut_len:]
+            ny = ny[cut_len:]
+            
             # plt.plot(nx,ny, marker='o')
-            ax.plot(nx,ny, label=str(label))
-            ax.set_xlabel('sample_num')
+            ax.plot(nx,ny,
+                    label=str(label)
+                    )
+            ax.set_xlabel('sample_ratio')
             ax.set_ylabel('acc')
 
         draw_by_gap(cnt//5,5)
@@ -109,6 +128,7 @@ class ConfidenceScoresEvaluator:
         draw_by_gap(cnt//15,15)
         draw_by_gap(cnt//30,30)
         draw_by_gap(cnt//50,50)
+        ax.legend()
         # gap = 15
             # plt.text(cx,cy, f'{conf_score[p]:.2f}', 
             #          horizontalalignment='center', 
@@ -117,24 +137,31 @@ class ConfidenceScoresEvaluator:
         # ny = gaussian_filter1d(ny, sigma=5)
             # print(p, acc[p], conf_score[cnt-1-p])
         # plt.legend()
-        ax.legend()
+        return cnt
         # plt.savefig(png_path)
         # plt.close()
     
-    def get_thresholds(self, target_acc_list):
+    def get_thresholds(self, target_acc_list, show=False):
         conf_score_thresholds = []
+        threshold_pids = []
         for lid, label in enumerate(self.label_list):
             ans_dict = self._get_target_confidence_score_correctness(target=lid)
             # print(ans_dict)
             tar_acc = target_acc_list[lid]
-            for cur_acc, cur_conf_score in zip(ans_dict['acc'][::-1], ans_dict['conf_score'][::-1]):
+            for pid, cur_acc, cur_conf_score in zip(range(len(ans_dict['acc'])-1,-1,-1), ans_dict['acc'][::-1], ans_dict['conf_score'][::-1]):
                 if cur_acc > tar_acc:
                     conf_score_thresholds.append(cur_conf_score)
+                    threshold_pids.append(pid)
                     break
-        for cst, label in zip(conf_score_thresholds, self.label_list):
-            print(label)
-            print(f'{cst:.2f}')
-        pass
+        if show:
+            for cst, label in zip(conf_score_thresholds, self.label_list):
+                print(label)
+                print(f'{label}: {cst:.2f}')
+            print(', '.join(map(lambda s:f'{s:.2f}', conf_score_thresholds)))
+        return {
+            'conf_score_thresholds': conf_score_thresholds,
+            'threshold_pids': threshold_pids,
+        }
     
     
 if __name__ == '__main__':
@@ -149,5 +176,8 @@ if __name__ == '__main__':
     )
     # score_evalor.draw()
     # score_evalor.get_thresholds([0.9,0.9,0.88,0.9])
-    score_evalor.get_thresholds([0.9,0.9,0.9,0.9])
+    target_acc_list = [0.9,0.9,0.88,0.9]
+    # target_acc_list = [0.9]*4
+    score_evalor.get_thresholds(target_acc_list, show=True)
+    # score_evalor.draw(target_acc_list)
     
