@@ -4,7 +4,7 @@ from utils_zp.common_import import *
 
 class ExtraSetting(ExpArgs):
     def __init__(self) -> None:
-        self.rest_mem_mb = 10000
+        self.rest_mem_mb = 1000000
         self.wait_befor_start = 3
         
         self.output_scores = True
