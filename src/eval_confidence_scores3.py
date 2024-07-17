@@ -2,6 +2,7 @@ from utils_zp import *
 from IDRR_data import IDRRDataFrames
 
 import numpy as np
+from sklearn.metrics import classification_report
 
 
 class ConfidenceScoresEvaluator:
@@ -21,6 +22,7 @@ class ConfidenceScoresEvaluator:
             load_json(target_res_dir/'generated_scores.jsonl'),
             key_col_name='label', val_col_name='scores'
         )
+        self.scores_dict = {k:np.mean(v)for k,v in self.scores_dict.items()}
         pred_dict = build_dict_from_df_or_dicts(
             load_json(target_res_dir/'generated_predictions.jsonl'),
             key_col_name='label', val_col_name='predict'
@@ -42,25 +44,25 @@ class ConfidenceScoresEvaluator:
             load_json(path(rest_dir, 'generated_predictions.jsonl')),
             key_col_name='label', val_col_name='predict'
         )
-        self.rest_pred = postprocess_generation_res_to_lid(
+        self.rest_pred_dict = postprocess_generation_res_to_lid(
             pred=rest_pred, label_list=self.label_list,
         )['pred']
-        assert sorted(pred_dict.keys())==sorted(gt_dict.keys())==sorted(self.scores_dict.keys())==sorted(self.rest_pred.keys())
+        assert sorted(pred_dict.keys())==sorted(gt_dict.keys())==sorted(self.scores_dict.keys())==sorted(self.rest_pred_dict.keys())
         self.rest_dir = rest_dir
         print(processed_res['label_list'])
         # assert len(pred_dict)==len(gt_dict)==len(self.scores_dict)
+        
+        self._conf_metric_lst = []
+        for lid, label in enumerate(self.label_list):
+            pass
   
-    def draw2(self, draw_max=False, tar_png='confidence_score2.png'):
-        # if draw_max:
-        #     to_draw_dots_list = self.get_thresholds2()['threshold_pids']
-        # else:
-        #     draw_max = None
+    def draw3(self, tar_png='confidence_score2.png'):
         fig, ax_list = plt.subplots(nrows=4,ncols=1,figsize=(8,4.8*4))
         plt.subplots_adjust(hspace=0.5)
         for lid, label in enumerate(self.label_list):
             cur_ax = ax_list[lid]
-            self._draw_confidence_score_acc2(
-                **self._get_target_confidence_score_correctness2(target=lid),
+            self._draw_confidence_score_acc3(
+                **self._get_target_confidence_score_correctness3(target=lid),
                 ax=cur_ax, 
                 # to_draw_dots=[to_draw_dots_list[lid]],
             )
@@ -69,34 +71,54 @@ class ConfidenceScoresEvaluator:
         # plt.gca().invert_xaxis()
         plt.savefig(self.target_res_dir/tar_png)
     
-    def _get_target_confidence_score_correctness2(self, target):
-        conf_score = []
-        correctness = []
-        rest_correct = []
-        for data_id in self.gt_dict:
-            if self.pred_dict[data_id] == target:
-                correctness.append(self.pred_dict[data_id] == self.gt_dict[data_id])
-                rest_correct.append(self.rest_pred[data_id] == self.gt_dict[data_id])
-                conf_score.append(ConfidenceScoresEvaluator.scores_to_confidence_scores(
-                        self.scores_dict[data_id]
-                ))
-        conf_score, correctness, rest_correct = zip(
-            *sorted(zip(conf_score,correctness,rest_correct), reverse=True))
+    # @staticmethod
+    def cal_target_confidence_score_metrics(
+        self,
+        # score_pred_dict, rest_pred_dict, gt_dict, 
+        # score_dict, 
+        target, target_threshold,
+    ):
+        score_pred_dict = self.pred_dict
+        rest_pred_dict = self.rest_pred_dict
+        gt_dict = self.gt_dict
+        score_dict = self.scores_dict
+        pred_lst, gt_lst = [], []
+        for did in gt_dict:
+            gt_lst.append(gt_dict[did]==target)
+            cur_score_pred = score_pred_dict[did]
+            cur_rest_pred = rest_pred_dict[did]
+            cur_score = score_dict[did]
+            if cur_score_pred==target:
+                if cur_score>target_threshold:
+                    pred_lst.append(True)
+                else:
+                    pred_lst.append(cur_rest_pred == target)
+            else:
+                pred_lst.append(False)
+        cls_report = classification_report(
+            y_true=gt_lst, y_pred=pred_lst, output_dict=True,
+        )
+        # print(classification_report(
+        #     y_true=gt_lst, y_pred=pred_lst, output_dict=False,
+        # ))
+        metrics_dict = {
+            'f1':cls_report['macro avg']['f1-score'],
+            'cls_report': cls_report,
+        }
+        return metrics_dict
+    
+    def _get_target_confidence_score_correctness3(self, target):
         
-        acc = []
-        total_acc = []
-        right = 0
-        total_right = sum(rest_correct)
-        cnt = len(conf_score)
-        
-        for pid, (p,rp) in enumerate(zip(correctness, rest_correct)):
-            if p:
-                right += 1
-                total_right += 1
-            if rp:
-                total_right -= 1
-            acc.append(right/(pid+1))
-            total_acc.append(total_right/cnt)
+        score_lst = sorted(self.scores_dict.values())
+        f1_lst = [self.cal_target_confidence_score_metrics(
+            target=target, target_threshold=score
+        )['f1'] for score in score_lst]
+        # print(f1_lst)
+        return {
+            'f1': f1_lst,
+            'conf_score': score_lst,
+            'cnt': len(f1_lst),
+        }
         return {
             'conf_score': conf_score,
             'correctness': correctness,
@@ -105,13 +127,16 @@ class ConfidenceScoresEvaluator:
             'cnt': cnt,
         }
     
-    def _draw_confidence_score_acc2(
-        self, conf_score, correctness, acc, total_acc, cnt, 
-        ax, to_draw_dots=None,
+    def _draw_confidence_score_acc3(
+        self, conf_score=None, correctness=None, 
+        acc=None, total_acc=None, cnt=None, 
+        ax=None, to_draw_dots=None,
+        f1=None, score=None,
     ):
+        # print(f1)
         from scipy.ndimage import gaussian_filter1d
 
-        acc = gaussian_filter1d(acc, sigma=1)
+        # acc = gaussian_filter1d(acc, sigma=1)
 
         def draw_by_gap2(gap, label):
             nx,ny = [],[]
@@ -119,7 +144,7 @@ class ConfidenceScoresEvaluator:
                 # cx = p/cnt
                 cp = p/cnt
                 cx = np.mean(conf_score[p:p+gap])
-                cy = np.mean(total_acc[p:p+gap])
+                cy = np.mean(f1[p:p+gap])
                 nx.append(cx)
                 ny.append(cy)
             
@@ -171,15 +196,15 @@ class ConfidenceScoresEvaluator:
         # plt.savefig(png_path)
         # plt.close()
       
-    def get_thresholds2(self, show=False):
+    def get_thresholds3(self, show=False):
         conf_score_thresholds = []
         threshold_pids = []
         for lid, label in enumerate(self.label_list):
-            ans_dict = self._get_target_confidence_score_correctness2(target=lid)
+            ans_dict = self._get_target_confidence_score_correctness3(target=lid)
             # print(ans_dict)
             pid = max(
                 range(ans_dict['cnt']), 
-                key=lambda x: (ans_dict['total_acc'][x], x)
+                key=lambda x: (ans_dict['f1'][x], x)
             )
             conf_score_thresholds.append(ans_dict['conf_score'][pid])
             threshold_pids.append(pid)
@@ -200,11 +225,14 @@ if __name__ == '__main__':
             data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
             # data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3.p1.csv'
         ),
-        split='dev',
+        split='train',
         # target_res_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5',
         # rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5',
-        target_res_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5',
-        rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-16-24.main_distill_all_thp_dev.ckpt8000.bs1*8_lr0.0001_ep5'
+        target_res_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5',
+        rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
     )
-    score_evalor.get_thresholds2(show=True)
-    score_evalor.draw2(draw_max=True, tar_png='score_all_without_gaussian')
+    # print(score_evalor.cal_target_confidence_score_metrics(
+    #     target=0, target_threshold=30
+    # ))
+    score_evalor.get_thresholds3(show=True)
+    # score_evalor.draw3(tar_png='score_all_f1.png')
