@@ -83,6 +83,7 @@ def calculate_metric(
         'cls_report': cls_report,
     }
     print(res_dic)
+    return res_dic
     # dump_json(res_dic, target_dir/'processed_dic.json', indent=4)
 
 
