@@ -10,8 +10,8 @@ elif SERVER_NAME == 'SGA100':
     ROOT_DIR = '/public/home/hongy/zpwang/LLaMA/'
     PRETRAINED_MODEL_DIR = '/public/home/hongy/pretrained_models/'
 elif SERVER_NAME == 't2s':
-    ROOT_DIR = '/home/qwe/test/zpwang/LLaMA/'
-    PRETRAINED_MODEL_DIR = '/home/qwe/test/pretrained_model/'
+    ROOT_DIR = '/home/user/test/zpwang/LLaMA/'
+    PRETRAINED_MODEL_DIR = '/home/user/test/pretrained_model/'
 else:
     raise Exception('wrong ROOT_DIR')
 

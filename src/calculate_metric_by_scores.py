@@ -89,11 +89,11 @@ def calculate_metric(
 
 if __name__ == '__main__':
     calculate_metric(
-        score_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-10-45-02.main_base.ckpt5000.bs1*8_lr0.0001_ep5',
-        rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
+        score_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-10-45-02.main_base.ckpt5000.bs1*8_lr0.0001_ep5',
+        rest_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
         dfs=IDRRDataFrames(
             data_name='pdtb3', data_level='top', data_relation='Implicit',
-            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+            data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
         ),
         split='test',
         confidence_score_threshold=[

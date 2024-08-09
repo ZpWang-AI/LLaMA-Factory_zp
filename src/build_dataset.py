@@ -21,7 +21,7 @@ class BuildDataset(ExpArgs):
         # ========== 'path' ========================
         self.part2 = 'path'
         self.data_path = ''
-        self.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA/LLaMA-Factory'
+        self.llama_factory_dir = '/home/user/test/zpwang/LLaMA/LLaMA-Factory'
         
         # ========== 'base setting' ================
         self.part3 = 'base setting'
@@ -205,6 +205,6 @@ class BuildDataset(ExpArgs):
 if __name__ == '__main__':
     # BuildDataset.remove_dataset(
     #     dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
-    #     llama_factory_dir='/home/qwe/test/zpwang/LLaMA/LLaMA-Factory'
+    #     llama_factory_dir='/home/user/test/zpwang/LLaMA/LLaMA-Factory'
     # )
-    BuildDataset.rebuild_dataset_info('/home/qwe/test/zpwang/LLaMA-Factory')
+    BuildDataset.rebuild_dataset_info('/home/user/test/zpwang/LLaMA-Factory')

@@ -52,10 +52,10 @@ if __name__ == '__main__':
 
     # ==================
     sample.desc = 'main_gpt4_train1.5k'
-    sample.data_path = '/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext.gpt4_train1.5k.csv'
+    sample.data_path = '/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext.gpt4_train1.5k.csv'
     # ==================
 
-    sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
+    sample.llama_factory_dir = '/home/user/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
     sample.max_seq_length = 1024

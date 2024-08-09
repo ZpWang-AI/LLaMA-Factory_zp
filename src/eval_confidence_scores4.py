@@ -70,7 +70,7 @@ class ConfidenceScoresEvaluator:
     
     def eval(
         self, draw=True, 
-        res_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/train',
+        res_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/train',
         png_name='score_acc.png', 
         xlabel='confidence score', ylabel='acc', title='train',
     ):
@@ -115,11 +115,11 @@ class ConfidenceScoresEvaluator:
             plt.savefig(res_dir/png_name)
         
         final_res = calculate_metric(
-            score_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5',
-            rest_dir='/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
+            score_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5',
+            rest_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
             dfs=IDRRDataFrames(
                 data_name='pdtb3', data_level='top', data_relation='Implicit',
-                data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+                data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
             ),
             split='test',
             confidence_score_threshold=threshold_lst+[100000],
@@ -207,23 +207,23 @@ class ConfidenceScoresEvaluator:
       
 if __name__ == '__main__':
     df_split = 'test'
-    df_split = 'train'
     df_split = 'dev'
+    df_split = 'train'
     if df_split == 'train':
-        target_res_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
+        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
+        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
     elif df_split == 'dev':
-        target_res_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-16-24.main_distill_all_thp_dev.ckpt8000.bs1*8_lr0.0001_ep5'
+        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5'
+        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-16-24.main_distill_all_thp_dev.ckpt8000.bs1*8_lr0.0001_ep5'
     elif df_split == 'test':
-        target_res_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5'
+        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5'
+        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5'
         
     score_evalor = ConfidenceScoresEvaluator(
         dfs=IDRRDataFrames(
             data_name='pdtb3', data_level='top', data_relation='Implicit',
-            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
-            # data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3.p1.csv'
+            data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+            # data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3.p1.csv'
         ),
         split=df_split,
         target_res_dir=target_res_dir,
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     # ))
     thresholds_lst = score_evalor.eval(
         draw=True, 
-        res_dir=path('/home/qwe/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence', df_split),
+        res_dir=path('/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence', df_split),
         png_name=f'{df_split}_score_acc.png',
         xlabel='confidence score', ylabel='acc',
         title=df_split,

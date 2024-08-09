@@ -95,16 +95,16 @@ if __name__ == '__main__':
         IDRRDataFrames(
             data_name='pdtb3',
             data_level='top', data_relation='Implicit',
-            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
+            data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
         ).test_df,
         'label11'
     )
     calculate_metric(gt_dic=gt_dic, target_dirs=[
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-00-00.base_pred.ckptfinal.bs1*8_lr0.0001_ep5',
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-32-07.base_pred.ckpt4000.bs1*8_lr0.0001_ep5',
-        # '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-33-17.base_pred.ckpt8000.bs1*8_lr0.0001_ep5',
-        '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-11-14-18.base_pred.ckpt8000.bs1*8_lr0.0001_ep5'
+        '/home/user/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-00-00.base_pred.ckptfinal.bs1*8_lr0.0001_ep5',
+        '/home/user/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-32-07.base_pred.ckpt4000.bs1*8_lr0.0001_ep5',
+        # '/home/user/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-10-33-17.base_pred.ckpt8000.bs1*8_lr0.0001_ep5',
+        '/home/user/test/zpwang/LLaMA/exp_space/Done/Main_base/2024-06-14-11-14-18.base_pred.ckpt8000.bs1*8_lr0.0001_ep5'
         
-        # '/home/qwe/test/zpwang/LLaMA/exp_space/Done/Main_distill_all/2024-06-24-17-22-42.main_distill_all.ckpt8000.bs1*8_lr0.0001_ep5'
+        # '/home/user/test/zpwang/LLaMA/exp_space/Done/Main_distill_all/2024-06-24-17-22-42.main_distill_all.ckpt8000.bs1*8_lr0.0001_ep5'
     ])
-    # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
+    # calculate_metric('/home/user/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')

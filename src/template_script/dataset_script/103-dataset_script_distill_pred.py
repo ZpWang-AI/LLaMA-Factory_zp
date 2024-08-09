@@ -38,10 +38,10 @@ if __name__ == '__main__':
 
     # ==================
     sample.desc = 'distill'
-    sample.data_path = '/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+    sample.data_path = '/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
     # ==================
 
-    sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
+    sample.llama_factory_dir = '/home/user/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
     sample.max_seq_length = 1024

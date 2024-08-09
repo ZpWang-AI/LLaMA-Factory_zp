@@ -32,7 +32,7 @@ def calculate_metric(target_dir, gt_dic):
     postprocessed = postprocess_generation_res_to_lid(
         pred=pred, 
         gt=gt, 
-        match_strategy='complete'  # TODO
+        match_strategy='first exists'  # TODO
     )
     pred = postprocessed['pred']
     gt = postprocessed['gt']
@@ -71,12 +71,12 @@ if __name__ == '__main__':
         IDRRDataFrames(
             data_name='pdtb3',
             data_level='top', data_relation='Implicit',
-            data_path='/home/qwe/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
+            data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv',
         ).test_df,
         'label11'
     )
-    root_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/Main_llama_init'
+    root_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_llama_init'
     for dir in os.listdir(root_dir):
         dir = path(root_dir)/dir
         calculate_metric(dir, gt_dic)
-    # calculate_metric('/home/qwe/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')
+    # calculate_metric('/home/user/test/zpwang/LLaMA/exp_space/filter/2024-06-21-20-37-57.filter.ckpt2000.bs1*8_lr0.0001_ep5')

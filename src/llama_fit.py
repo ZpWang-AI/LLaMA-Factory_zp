@@ -14,7 +14,7 @@ class ExtraSetting(ExpArgs):
 class LLaMAFit(ExpArgs):
     def __init__(self) -> None:
         # model
-        self.model_name_or_path = '/home/qwe/test/pretrained_model/Llama-3-8B-Instruct'
+        self.model_name_or_path = '/home/user/test/pretrained_model/Llama-3-8B-Instruct'
         self.adapter_name_or_path = None
         
         # method
@@ -35,7 +35,7 @@ class LLaMAFit(ExpArgs):
         self.preprocessing_num_workers = 16
         
         # output
-        self.output_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/test'
+        self.output_dir = '/home/user/test/zpwang/LLaMA/exp_space/test'
         self.logging_steps = 10
         self.save_steps = 1000
         self.plot_loss = True
@@ -91,4 +91,4 @@ class LLaMAFit(ExpArgs):
 
 if __name__ == '__main__':
     sample = LLaMAFit()
-    sample.start(0, '/home/qwe/test/zpwang/LLaMA-Factory')
+    sample.start(0, '/home/user/test/zpwang/LLaMA-Factory')

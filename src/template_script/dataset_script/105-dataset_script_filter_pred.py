@@ -51,10 +51,10 @@ if __name__ == '__main__':
 
     # ==================
     sample.desc = 'filter_distill_hf'
-    sample.data_path = '/home/qwe/test/zpwang/IDRR_data/data/dataBuild/pdtb3_top_implicit.subtext_distill.llama_distill_hf.csv'
+    sample.data_path = '/home/user/test/zpwang/IDRR_data/data/dataBuild/pdtb3_top_implicit.subtext_distill.llama_distill_hf.csv'
     # ==================
 
-    sample.llama_factory_dir = '/home/qwe/test/zpwang/LLaMA-Factory'
+    sample.llama_factory_dir = '/home/user/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
     sample.max_seq_length = 1024
@@ -63,6 +63,6 @@ if __name__ == '__main__':
     
     # BuildDataset.remove_dataset(
     #     'pdtb3.top.2024_06_24_18_08_33.filter_distill_hf.pred',
-    #     llama_factory_dir='/home/qwe/test/zpwang/LLaMA-Factory'
+    #     llama_factory_dir='/home/user/test/zpwang/LLaMA-Factory'
     # )
     

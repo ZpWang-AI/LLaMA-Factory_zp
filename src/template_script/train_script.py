@@ -13,7 +13,7 @@ from llama_fit import LLaMAFit
 
 if __name__ == "__main__":
     main = LLaMAFit()
-    main.model_name_or_path = '/home/qwe/test/pretrained_model/Llama-3-8B-Instruct'
+    main.model_name_or_path = '/home/user/test/pretrained_model/Llama-3-8B-Instruct'
     main.template = 'llama3'
 
     # =====
@@ -27,8 +27,8 @@ if __name__ == "__main__":
     main._extra_setting.output_scores = False
     main._extra_setting.do_dev = False
 
-    main.output_dir = '/home/qwe/test/zpwang/LLaMA/exp_space/'
-    llamafactory_path = '/home/qwe/test/zpwang/LLaMA-Factory'
+    main.output_dir = '/home/user/test/zpwang/LLaMA/exp_space/'
+    llamafactory_path = '/home/user/test/zpwang/LLaMA-Factory'
     
     main.per_device_eval_batch_size = 1
     main.gradient_accumulation_steps = 8
