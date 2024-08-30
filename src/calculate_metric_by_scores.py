@@ -47,7 +47,10 @@ def calculate_metric(
         match_strategy='first exists', lower_results=True,
     )['pred']
     label_list = dfs.label_list
-    assert sorted(pred_dict_score.keys())==sorted(pred_dict_rest.keys())==sorted(gt_dict.keys())==sorted(scores_dict.keys())
+    assert all(
+        sorted(cdic.keys())==sorted(gt_dict.keys())
+        for cdic in [pred_dict_score, pred_dict_rest, scores_dict]
+    )
     
     gt, pred = [], []
     for data_id in gt_dict:
@@ -57,7 +60,6 @@ def calculate_metric(
         else:
             pred.append(pred_dict_score[data_id])
 
-    # TODO
     confusion_mat = confusion_matrix(
         y_true=gt, y_pred=pred,
         labels=list(range(len(label_list))),
@@ -70,19 +72,25 @@ def calculate_metric(
     )
     print(confusion_mat)
     print_sep()
-    print(classification_report(
-        y_true=gt, y_pred=pred, 
-        labels=list(range(len(label_list))), 
-        target_names=label_list, zero_division=0,
-        output_dict=False,
-    ))
+    # print(classification_report(
+    #     y_true=gt, y_pred=reasoning, labels=list(range(len(label_list))),
+    #     target_names=label_list, output_dict=False
+    # ))
+    # print_sep()
+    macrof1 = cls_report['macro avg']['f1-score']
+    acc = (confusion_mat*np.eye(len(confusion_mat))).sum() / confusion_mat.sum()
+    macrof1 = f'{macrof1*100:.3f}'
+    acc = f'{acc*100:.3f}'
     res_dic = {
-        'macro-f1': cls_report['macro avg']['f1-score'],
-        # 'yes_precision': cls_report['yes']['precision'],
+        'macro-f1': macrof1,
+        'acc': acc,
         'confusion_matrix': confusion_mat.tolist(),
         'cls_report': cls_report,
     }
-    print(res_dic)
+    print({
+        'macro-f1': macrof1,
+        'acc': acc,
+    })
     return res_dic
     # dump_json(res_dic, target_dir/'processed_dic.json', indent=4)
 

@@ -11,20 +11,20 @@ class ConfidenceScoresEvaluator:
     def __init__(
         self, 
         dfs:IDRRDataFrames, split, 
-        target_res_dir,
+        score_dir,
         rest_dir,
     ) -> None:
         self.dfs = dfs
         self.split = split
         df = dfs.get_dataframe(split=split)
-        target_res_dir = path(target_res_dir)
+        score_dir = path(score_dir)
         self.scores_dict = build_dict_from_df_or_dicts(
-            load_json(target_res_dir/'generated_scores.jsonl'),
+            load_json(score_dir/'generated_scores.jsonl'),
             key_col_name='label', val_col_name='scores'
         )
         self.scores_dict = {k:np.mean(v)for k,v in self.scores_dict.items()}
-        pred_dict = build_dict_from_df_or_dicts(
-            load_json(target_res_dir/'generated_predictions.jsonl'),
+        pred_dict_score = build_dict_from_df_or_dicts(
+            load_json(score_dir/'generated_predictions.jsonl'),
             key_col_name='label', val_col_name='predict'
         )
         gt_dict = build_dict_from_df_or_dicts(
@@ -32,56 +32,57 @@ class ConfidenceScoresEvaluator:
         )
         gt_dict = {str(k):v for k,v in gt_dict.items()}
         processed_res = postprocess_generation_res_to_lid(
-            pred=pred_dict, gt=gt_dict, label_list=dfs.label_list,
+            pred=pred_dict_score, gt=gt_dict, label_list=dfs.label_list,
             match_strategy='first exists', 
             lower_results=True,
         )
-        self.pred_dict = processed_res['pred']
+        self.pred_dict_score = processed_res['pred']
         self.gt_dict = processed_res['gt']
         self.label_list = dfs.label_list
-        self.target_res_dir = target_res_dir
-        rest_pred = build_dict_from_df_or_dicts(
+        self.score_dir = score_dir
+        pred_dic_rest = build_dict_from_df_or_dicts(
             load_json(path(rest_dir, 'generated_predictions.jsonl')),
             key_col_name='label', val_col_name='predict'
         )
-        self.rest_pred_dict = postprocess_generation_res_to_lid(
-            pred=rest_pred, label_list=self.label_list,
+        self.pred_dict_rest = postprocess_generation_res_to_lid(
+            pred=pred_dic_rest, label_list=self.label_list,
         )['pred']
-        assert iterations_are_equal([
-            pred_dict.keys(), gt_dict.keys(), 
-            self.scores_dict.keys(), self.rest_pred_dict.keys(),
-        ])
+        assert all(
+            sorted(cdic.keys())==sorted(gt_dict.keys())
+            for cdic in [self.pred_dict_score, self.pred_dict_rest, self.scores_dict]
+        )
         self.rest_dir = rest_dir
-        print(processed_res['label_list'])
-
+        print(self.label_list)
+        self.pred_dict_score, self.pred_dict_rest, self.scores_dict, self.gt_dict
+        
         # get sorted_samples
-        rest_pred_dict = self.rest_pred_dict
-        score_pred_dict = self.pred_dict
-        score_dict = self.scores_dict
-        gt_dict = self.gt_dict
         sorted_samples = []
-        for did in gt_dict:
+        for data_id in self.gt_dict:
             sorted_samples.append([
-                score_dict[did], score_pred_dict[did], 
-                rest_pred_dict[did], gt_dict[did],
+                self.scores_dict[data_id], self.pred_dict_score[data_id],
+                self.pred_dict_rest[data_id], self.gt_dict[data_id],
             ])
         sorted_samples.sort()
         self.sorted_samples = sorted_samples
     
     def eval(
         self, draw=True, 
-        res_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/train',
+        result_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/train',
         png_name='score_acc.png', 
         xlabel='confidence score', ylabel='acc', title='train',
+        test_score_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5',
+        test_rest_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
+        test_dfs=None, 
+        test_df_split='test',
     ):
         from scipy.ndimage import gaussian_filter1d
-        res_dir = path(res_dir)
+        result_dir = path(result_dir)
         
         output_string = []
         threshold_lst = []  
         fig, ax_list = plt.subplots(nrows=4,ncols=1,figsize=(8,4.8*4))
         plt.subplots_adjust(hspace=0.5)
-        for split_piece in [None]:
+        for split_piece in [None]:  # TODO
             for lid, label in enumerate(self.label_list):
                 score_lst, acc_lst = self.cal_target_acc(lid)
                 score_lst, acc_lst = self.postprocess_metric(score_lst, acc_lst, split_piece=None)
@@ -105,28 +106,25 @@ class ConfidenceScoresEvaluator:
         output_string.append(', '.join(map(str, threshold_lst)))
         output_string = '\n'.join(output_string)
         print(output_string)
-        make_path(res_dir)
-        with open(res_dir/'thresholds.txt', 'w', encoding='utf8')as f:
+        make_path(result_dir)
+        with open(result_dir/'thresholds.txt', 'w', encoding='utf8')as f:
             f.write(output_string)
         
         if draw:
-            make_path(dir_path=res_dir)
+            make_path(dir_path=result_dir)
             # plt.title(title)
-            plt.savefig(res_dir/png_name)
+            plt.savefig(result_dir/png_name)
         
         final_res = calculate_metric(
-            score_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5',
-            rest_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
-            dfs=IDRRDataFrames(
-                data_name='pdtb3', data_level='top', data_relation='Implicit',
-                data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
-            ),
-            split='test',
+            score_dir=test_score_dir,
+            rest_dir=test_rest_dir,
+            dfs=test_dfs if test_dfs else self.dfs,
+            split=test_df_split,
             confidence_score_threshold=threshold_lst+[100000],
         )
         final_res = json.dumps(final_res, indent=4, ensure_ascii=False)
-        print(final_res)
-        with open(res_dir/'final_res.json', 'w', encoding='utf8')as f:
+        # print(final_res)
+        with open(result_dir/'final_res.json', 'w', encoding='utf8')as f:
             f.write(final_res)
         
         return threshold_lst
@@ -137,8 +135,9 @@ class ConfidenceScoresEvaluator:
         # score_dict, 
         target, target_threshold,
     ):
-        score_pred_dict = self.pred_dict
-        rest_pred_dict = self.rest_pred_dict
+        raise 'TODO'
+        score_pred_dict = self.pred_dict_score
+        rest_pred_dict = self.pred_dict_rest
         score_dict = self.scores_dict
         gt_dict = self.gt_dict
         
@@ -210,13 +209,13 @@ if __name__ == '__main__':
     df_split = 'dev'
     df_split = 'train'
     if df_split == 'train':
-        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
+        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
         rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
     elif df_split == 'dev':
-        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5'
+        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5'
         rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-16-24.main_distill_all_thp_dev.ckpt8000.bs1*8_lr0.0001_ep5'
     elif df_split == 'test':
-        target_res_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5'
+        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5'
         rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5'
         
     score_evalor = ConfidenceScoresEvaluator(
@@ -226,7 +225,7 @@ if __name__ == '__main__':
             # data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3.p1.csv'
         ),
         split=df_split,
-        target_res_dir=target_res_dir,
+        score_dir=score_dir,
         rest_dir=rest_dir,
     )
     # print(score_evalor.cal_target_confidence_score_metrics(
@@ -234,9 +233,13 @@ if __name__ == '__main__':
     # ))
     thresholds_lst = score_evalor.eval(
         draw=True, 
-        res_dir=path('/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence', df_split),
+        result_dir=path('/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence', df_split),
         png_name=f'{df_split}_score_acc.png',
         xlabel='confidence score', ylabel='acc',
         title=df_split,
+        # test_score_dir='',
+        # test_rest_dir='',
+        # test_dfs=None,
+        # test_df_split='test',
     )
     
