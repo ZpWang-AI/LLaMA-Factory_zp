@@ -26,8 +26,6 @@ nohup.out
 !/src
 
 # src
-src/scripts
-!src/model/_test_model.py
-!src/data/_test_data.py
-
+!src/template_scripts
+src/*scripts
 # data
