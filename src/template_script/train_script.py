@@ -19,12 +19,12 @@ if __name__ == "__main__":
     # =====
     main.adapter_name_or_path
     desc = 'base'
-    main.dataset = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
-    main._extra_setting.rest_mem_mb = 10**5
+    main.dataset = 'pdtb3.top.2024_06_11_21_41_36.base'
+    main._extra_setting.rest_mem_mb = 10**9
     main._extra_setting.wait_befor_start = 3
+    main._extra_setting.output_scores = False
     # =====
     
-    main._extra_setting.output_scores = False
     main._extra_setting.do_dev = False
 
     main.output_dir = '/home/user/test/zpwang/LLaMA/exp_space/'

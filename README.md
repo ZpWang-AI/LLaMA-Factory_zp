@@ -1,4 +1,20 @@
-# Prompt
+# LLaMA
+
+Do training and prediction using LLaMA
+
+## Running Tips 
+
+1. run `src/template_script/dataset_script.py`
+
+2. run `src/template_script/train_script.py`
+
+3. run `src/template_script/pred_script.py`
+
+4. run `src/calculate_metric.py`
+
+5. run `src/eval_confidence_scores.py`
+
+## Prompt
 
 * GPT 生成潜台词
 
