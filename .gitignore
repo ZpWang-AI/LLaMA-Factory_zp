@@ -26,6 +26,7 @@ nohup.out
 !/src
 
 # src
-!src/template_scripts
+!src/template_script
 src/*scripts
+
 # data
