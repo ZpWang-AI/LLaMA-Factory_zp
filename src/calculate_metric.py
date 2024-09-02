@@ -65,6 +65,7 @@ def calculate_metric(target_dir, gt_dic):
         'macro-f1': macrof1,
         'acc': acc,
     })
+    print_sep()
     dump_json(res_dic, target_dir/'processed_dic.json', indent=4)
 
 

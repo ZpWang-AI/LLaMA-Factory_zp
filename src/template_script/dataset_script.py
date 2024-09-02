@@ -44,21 +44,15 @@ if __name__ == '__main__':
     sample.data_relation = 'Implicit'
 
     # ==================
-    pred_data_split = ''  # pred: split, train: empty
     sample.desc = 'main_subtext_distill'
     sample.data_path = '/home/user/test/zpwang/IDRR_data/data/dataBuild/pdtb3_top_implicit.csv'
     # ==================
-    
-    if pred_data_split:
-        del prompt['train']
-        sample.data_split = pred_data_split
 
     sample.llama_factory_dir = '/home/user/test/zpwang/LLaMA-Factory'
     
     sample.prompt = prompt
-    sample.max_seq_length = 1024
+    sample.max_seq_length = 10**20
     
     sample.start()
     
-    # sample.remove_dataset('pdtb2.top.2024_08_19_15_32_09.main_gpt4_train1.5k', '/home/user/test/zpwang/LLaMA-Factory')
-    
+    # sample.rebuild_dataset_info(llama_factory_dir='/home/user/test/zpwang/LLaMA-Factory')

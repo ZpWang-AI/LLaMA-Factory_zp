@@ -48,7 +48,7 @@ if __name__ == "__main__":
     
     main._version_info_list = [
         get_cur_time(), desc, f'ckpt{ckpt}', 
-        f'bs{main.per_device_eval_batch_size}*{main.gradient_accumulation_steps}_lr{main.learning_rate}_ep{main.num_train_epochs}'
+        # f'bs{main.per_device_eval_batch_size}*{main.gradient_accumulation_steps}_lr{main.learning_rate}_ep{main.num_train_epochs}'
     ]
     
     main.start(

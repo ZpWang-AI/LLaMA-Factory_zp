@@ -66,7 +66,9 @@ class ConfidenceScoresEvaluator:
         self.sorted_samples = sorted_samples
     
     def eval(
-        self, draw=True, 
+        self, 
+        draw=True, 
+        split_piece=None,
         result_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/train',
         png_name='score_acc.png', 
         xlabel='confidence score', ylabel='acc', title='train',
@@ -82,39 +84,33 @@ class ConfidenceScoresEvaluator:
         threshold_lst = []  
         fig, ax_list = plt.subplots(nrows=4,ncols=1,figsize=(8,4.8*4))
         plt.subplots_adjust(hspace=0.5)
-        for split_piece in [None]:  # TODO
-            for lid, label in enumerate(self.label_list):
-                score_lst, acc_lst = self.cal_target_acc(lid)
-                score_lst, acc_lst = self.postprocess_metric(score_lst, acc_lst, split_piece=None)
-                threshold_pid = self.get_threshold(score_lst, acc_lst)
-                score_threshold = score_lst[threshold_pid]
-                threshold_lst.append(score_threshold)
-                output_string.append(f'{label}: {score_threshold:.2f}')
+        for lid, label in enumerate(self.label_list):
+            score_lst, acc_lst = self.cal_target_acc(lid)
+            score_lst, acc_lst = self.postprocess_metric(score_lst, acc_lst, split_piece=split_piece)
+            threshold_pid = self.get_threshold(score_lst, acc_lst)
+            score_threshold = score_lst[threshold_pid]
+            threshold_lst.append(score_threshold)
+            output_string.append(f'{label}: {score_threshold:.2f}')
 
-                # plot
-                cur_ax = ax_list[lid]
-                cur_ax.plot(score_lst, acc_lst, 
-                            label=str(split_piece),
-                            )
-                cur_ax.plot(score_lst[threshold_pid], acc_lst[threshold_pid],
-                            marker='o')
-                cur_ax.set_xlabel(xlabel)
-                cur_ax.set_ylabel(ylabel)
-                cur_ax.set_title(f'{label}')
-                if split_piece:
-                    cur_ax.legend()
+            # plot
+            cur_ax = ax_list[lid]
+            cur_ax.plot(score_lst, acc_lst, 
+                        label=str(split_piece),
+                        )
+            cur_ax.plot(score_lst[threshold_pid], acc_lst[threshold_pid],
+                        marker='o')
+            cur_ax.set_xlabel(xlabel)
+            cur_ax.set_ylabel(ylabel)
+            cur_ax.set_title(f'{label}')
+            if split_piece:
+                cur_ax.legend()
         output_string.append(', '.join(map(str, threshold_lst)))
         output_string = '\n'.join(output_string)
         print(output_string)
         make_path(result_dir)
         with open(result_dir/'thresholds.txt', 'w', encoding='utf8')as f:
             f.write(output_string)
-        
-        if draw:
-            make_path(dir_path=result_dir)
-            # plt.title(title)
-            plt.savefig(result_dir/png_name)
-        
+    
         final_res = calculate_metric(
             score_dir=test_score_dir,
             rest_dir=test_rest_dir,
@@ -126,6 +122,11 @@ class ConfidenceScoresEvaluator:
         # print(final_res)
         with open(result_dir/'final_res.json', 'w', encoding='utf8')as f:
             f.write(final_res)
+                
+        if title:
+            plt.title(title)
+        if draw:
+            plt.savefig(result_dir/png_name)
         
         return threshold_lst
     
@@ -205,19 +206,17 @@ class ConfidenceScoresEvaluator:
         
       
 if __name__ == '__main__':
-    df_split = 'test'
-    df_split = 'dev'
+    score_dir = '/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb3-top/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
+    rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb3-top/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
+    test_score_dir='/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb3-top/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5 copy',
+    test_rest_dir='/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb3-top/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
     df_split = 'train'
-    if df_split == 'train':
-        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-13-26.main_base_train.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-14-14-31.main_distill_all_thp_train.ckpt8000.bs1*8_lr0.0001_ep5'
-    elif df_split == 'dev':
-        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-43-25.main_base_dev.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-12-11-16-24.main_distill_all_thp_dev.ckpt8000.bs1*8_lr0.0001_ep5'
-    elif df_split == 'test':
-        score_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-13-41-06.main_base.ckpt7000.bs1*8_lr0.0001_ep5'
-        rest_dir = '/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5'
-        
+    split_piece = None
+    result_dir = path(
+        '/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb3-top',
+        f'{df_split}_{split_piece}'
+    )
+    
     score_evalor = ConfidenceScoresEvaluator(
         dfs=IDRRDataFrames(
             data_name='pdtb3', data_level='top', data_relation='Implicit',
@@ -228,18 +227,16 @@ if __name__ == '__main__':
         score_dir=score_dir,
         rest_dir=rest_dir,
     )
-    # print(score_evalor.cal_target_confidence_score_metrics(
-    #     target=0, target_threshold=30
-    # ))
-    thresholds_lst = score_evalor.eval(
+    score_evalor.eval(
         draw=True, 
-        result_dir=path('/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence', df_split),
+        split_piece=split_piece,
+        result_dir=result_dir,
         png_name=f'{df_split}_score_acc.png',
         xlabel='confidence score', ylabel='acc',
+        test_score_dir=test_score_dir,
+        test_rest_dir=test_rest_dir,
         title=df_split,
-        # test_score_dir='',
-        # test_rest_dir='',
-        # test_dfs=None,
-        # test_df_split='test',
+        test_dfs=None,
+        test_df_split='test',
     )
     

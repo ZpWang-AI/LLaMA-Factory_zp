@@ -97,17 +97,15 @@ def calculate_metric(
 
 if __name__ == '__main__':
     calculate_metric(
-        score_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-08-10-45-02.main_base.ckpt5000.bs1*8_lr0.0001_ep5',
-        rest_dir='/home/user/test/zpwang/LLaMA/exp_space/Main_distill_all_confidence/2024-07-06-15-09-34.main_distill_all_thp.ckpt8000.bs1*8_lr0.0001_ep5',
+        score_dir='/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb2-top/2024-08-31-10-25-30.main_base.ckpt6000',
+        rest_dir='/home/user/test/zpwang/LLaMA/exp_space/paper_needed/main/pdtb2-top/2024-08-31-10-34-07.main_subtext.ckpt6000',
         dfs=IDRRDataFrames(
-            data_name='pdtb3', data_level='top', data_relation='Implicit',
-            data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+            data_name='pdtb2', data_level='top', data_relation='Implicit',
+            # data_path='/home/user/test/zpwang/IDRR_data/data/used/pdtb3_top_implicit.subtext2.csv'
+            data_path='/home/user/test/zpwang/IDRR_data/data/dataBuild/pdtb2_top_implicit.subtext_distill.llama_distill_all.csv'
         ),
         split='test',
         confidence_score_threshold=[
-            30.49,
-            35.67,
-            30.89,
-            30.78
+            30.838817596435547, 35.21381711959839, 31.16776466369629, 30.77302837371826
         ],
     )

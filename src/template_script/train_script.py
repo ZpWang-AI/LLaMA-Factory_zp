@@ -32,7 +32,7 @@ if __name__ == "__main__":
     
     main.per_device_eval_batch_size = 1
     main.gradient_accumulation_steps = 8
-    main.learning_rate = 1e-4
+    main.learning_rate = 5e-5
     main.num_train_epochs = 5
     
     main.cutoff_len = 1024

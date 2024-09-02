@@ -6,7 +6,7 @@ from copy import deepcopy
 from pathlib import Path as path
 
 from IDRR_data import IDRRDataFrames, PromptFiller
-from utils_zp import AttrDict, ExpArgs, dump_json, load_json
+from utils_zp import AttrDict, ExpArgs, dump_json, load_json, make_path
 
 
 class BuildDataset(ExpArgs):
@@ -16,7 +16,6 @@ class BuildDataset(ExpArgs):
         self.data_name = 'pdtb3'
         self.data_level = 'level1'
         self.data_relation = 'Implicit'
-        self.data_split = ''
 
         # ========== 'path' ========================
         self.part2 = 'path'
@@ -52,7 +51,7 @@ class BuildDataset(ExpArgs):
         ]
         return '.'.join(info_list).replace('-', '_')
     
-    def start(self):
+    def start(self, target_split=None):
         self.data_path = path(self.data_path)
         self.llama_factory_dir = path(self.llama_factory_dir)
         assert self.data_path.exists()
@@ -66,52 +65,52 @@ class BuildDataset(ExpArgs):
             data_path=self.data_path,
         )
         
-        if 'train' in self.prompt and 'pred' in self.prompt:
-            train_prompt = self.prompt['train']
-            pred_prompt = self.prompt['pred']
-            self.build_single_dataset(
-                processed_data=PromptFiller(
-                    df=dataframes.train_df,
-                    prompt=train_prompt,
-                ).list,
-                processed_data_name=self.version+'.train'
-            )
-            self.build_single_dataset(
-                processed_data=PromptFiller(
-                    df=dataframes.dev_df,
-                    prompt=train_prompt,
-                ).list,
-                processed_data_name=self.version+'.dev'
-            )
-            self.build_single_dataset(
-                processed_data=PromptFiller(
-                    df=dataframes.test_df,
-                    prompt=pred_prompt,
-                ).list,
-                processed_data_name=self.version+'.test'
-            )
-        elif 'pred' in self.prompt:
-            assert self.data_split in 'train dev test all'.split()
-            pred_prompt = self.prompt['pred']
-            self.build_single_dataset(
-                processed_data=PromptFiller(
-                    df=dataframes.get_dataframe(split=self.data_split),
-                    prompt=pred_prompt,
-                ).list,
-                processed_data_name=self.version+'.pred'
-            )
-        else:
-            raise Exception('train&pred or pred in self.prompt')
+        assert 'train' in self.prompt and 'pred' in self.prompt
+        train_prompt = self.prompt['train']
+        pred_prompt = self.prompt['pred']
         
-        build_dataset_info_path = path(self.llama_factory_dir)/'data'/'build_dataset_info.json'
-        if build_dataset_info_path.exists():
-            build_dataset_info = load_json(build_dataset_info_path)
+        if not target_split:
+            for data_split in 'train dev test'.split():
+                self.build_single_dataset(
+                    processed_data=PromptFiller(
+                        df=dataframes.get_dataframe(split=data_split),
+                        prompt=train_prompt,
+                    ).list,
+                    processed_data_name=f'{self.version}.T.{data_split}',
+                    target_file=path(
+                        self.llama_factory_dir, 'data', 
+                        str(dataframes), 
+                        f'{self.create_time}.{self.desc}',
+                        f'{self.version}.T.{data_split}.json'
+                    )
+                )
+                self.build_single_dataset(
+                    processed_data=PromptFiller(
+                        df=dataframes.get_dataframe(split=data_split),
+                        prompt=pred_prompt,
+                    ).list,
+                    processed_data_name=f'{self.version}.P.{data_split}',
+                    target_file=path(
+                        self.llama_factory_dir, 'data', 
+                        str(dataframes), 
+                        f'{self.create_time}.{self.desc}',
+                        f'{self.version}.P.{data_split}.json'
+                    )
+                )
         else:
-            build_dataset_info = {}
-        build_dataset_info[self.version] = self.json
-        dump_json(build_dataset_info, build_dataset_info_path, mode='w', indent=4)
+            raise 'TODO'
+            assert target_split in 'train dev test all'.split()
+            self.build_single_dataset(
+                processed_data=PromptFiller(
+                    df=dataframes.get_dataframe(split=target_split),
+                    prompt=self.prompt,
+                ).list,
+                processed_data_name=f'{self.version}.{data_split}'
+            )
+        
+        self.rebuild_dataset_info(self.llama_factory_dir)
             
-    def build_single_dataset(self, processed_data:List[Dict[str, str]], processed_data_name):
+    def build_single_dataset(self, processed_data:List[Dict[str, str]], processed_data_name, target_file):
         processed_data = [
             ppd for ppd in processed_data if ppd['output'] 
         ]
@@ -128,7 +127,8 @@ class BuildDataset(ExpArgs):
             print(processed_data_name, 'has no data')
             return
         
-        target_file = self.llama_factory_dir/'data'/f'{processed_data_name}.json'
+        # target_file = self.llama_factory_dir/'data'/f'{processed_data_name}.json'
+        make_path(file_path=target_file)
         dump_json(processed_data, target_file, mode='w', indent=2)
         
         dataset_info_path:path = self.llama_factory_dir/'data'/'dataset_info.json'
@@ -156,6 +156,7 @@ class BuildDataset(ExpArgs):
 
     @staticmethod
     def remove_dataset(dataset_name, llama_factory_dir):
+        raise 'TODO\ndelete the file and BuildDataset.rebuild_dataset_info'
         data_dir = path(llama_factory_dir)/'data'
         
         build_dataset_info_path = data_dir/'build_dataset_info.json'
@@ -183,19 +184,22 @@ class BuildDataset(ExpArgs):
     def rebuild_dataset_info(llama_factory_dir):
         data_dir = path(llama_factory_dir)/'data'
         dataset_info = {}
-        for file in sorted(os.listdir(data_dir)):
-            dataset_name = path(file).stem
-            dataset_info[dataset_name] = {
-                'file_name': str(data_dir/file),
-                "columns": {
-                    "prompt": "instruction",
-                    "query": "input",
-                    "response": "output",
-                    "system": "system",
-                    "history": "history"
-                }
-            }
-        dump_json(dataset_info, data_dir/'dataset_info.json')
+        for dirpath, dirnames, filenames in os.walk(data_dir):
+            for filename in filenames:
+                if path(filename).suffix == '.json':
+                    dataset_name = path(filename).stem
+                    dataset_info[dataset_name] = {
+                        'file_name': str(path(dirpath, filename)),
+                        "columns": {
+                            "prompt": "instruction",
+                            "query": "input",
+                            "response": "output",
+                            "system": "system",
+                            "history": "history"
+                        }
+                    }
+                    
+        dump_json(dataset_info, data_dir/'dataset_info.json', indent=4)
         print('dump to', data_dir/'dataset_info.json')
 
 # arg1 arg2 conn1 conn2 
