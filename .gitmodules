@@ -1,0 +1,3 @@
+[submodule "LLaMA-Factory"]
+	path = LLaMA-Factory
+	url = git@ssh.github.com:ZpWang-AI/LLaMA-Factory.git
