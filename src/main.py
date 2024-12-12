@@ -74,16 +74,18 @@ class MainConfig(ExpArgs):
         `CUDA_VISIBLE_DEVICES=xx llamafactory-cli train {yaml_path}`
     '''
     def __init__(self) -> None:
-        # 
+        # =========== data =======================
         self.part1 = 'data'
         self.trainset_config: IDRRDatasetConfig = None
         self.devset_config: IDRRDatasetConfig = None
         self.testset_config: IDRRDatasetConfig = None
 
+        # =========== trainer ====================
         self.part2 = 'trainer'
         self.trainer_config = LLaMALoraSFTConfig()
         self.extra_setting = ExtraSetting()
 
+        # =========== additonal ==================
         self.part3 = 'additonal'
         self._version_info_list = []
         self.set_create_time()
@@ -131,4 +133,5 @@ class MainConfig(ExpArgs):
 
 if __name__ == '__main__':
     sample = MainConfig()
+    MainConfig().format_part_in_file(__file__)
     # sample.start(0, '/home/user/test/zpwang/LLaMA-Factory')

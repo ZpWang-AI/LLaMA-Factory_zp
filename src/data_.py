@@ -15,7 +15,7 @@ class IDRRDatasetConfig(ExpArgs):
     - del target_file and target_config_file
     - IDRRDatasetConfig.update_dataset_info()
     '''
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         # ========== 'data' ========================
         self.part1 = 'data'
         self.data_name = 'pdtb3'
@@ -68,7 +68,7 @@ class IDRRDatasetConfig(ExpArgs):
         
         # check target_file
         target_file = self.target_file
-        target_config_file = target_file.parent / self.data_split + '.config.json'
+        target_config_file = target_file.parent / (self.data_split + '.config.json')
         if target_file.exists():
             print(f'> Dataset "{self.version}" has been created')
             return
@@ -147,5 +147,16 @@ if __name__ == '__main__':
     #     dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
     #     llama_factory_dir='/home/user/test/zpwang/LLaMA/LLaMA-Factory'
     # )
-    IDRRDatasetConfig.update_dataset_info()
-    
+    # IDRRDatasetConfig.update_dataset_info()
+    sample = IDRRDatasetConfig()
+    sample.data_name = 'pdtb3'
+    sample.data_level = 'top'
+    sample.data_relation = 'Implicit'
+    sample.data_path = r'D:\ZpWang\Projects\02.01-IDRR_data\data\used\pdtb3.p2.csv'
+    sample.prompt = {
+        'instruction': 'Arg1:\n{arg1}\n\nArg2:\n{arg2}',
+        'output': '{label11id}',
+    }
+    sample.desc = '_local_test'
+    sample.start()
+    sample.update_dataset_info()
