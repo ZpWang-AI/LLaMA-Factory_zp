@@ -6,7 +6,7 @@ class IDRRDatasetConfig(ExpArgs):
     config = IDRRDatasetConfig() \\
     use config.start() to create dataset
 
-    dataset_name = str(config) = config.version
+    dataset_name = config.version
 
     auto update files in LLaMA-Factory/data:
     - dataset_info.json
@@ -54,9 +54,6 @@ class IDRRDatasetConfig(ExpArgs):
         ]
         return '.'.join(info_list)
         # return '.'.join(info_list).replace('-', '_')
-    
-    def __repr__(self):
-        return self.version
     
     @property
     def target_file(self):

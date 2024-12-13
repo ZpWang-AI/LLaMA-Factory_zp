@@ -102,10 +102,10 @@ class LLaMA(ExpArgs):
         # prepare data
         if is_train:
             self.trainset_config.start()
-            self.trainer_config.dataset = str(self.trainset_config)
+            self.trainer_config.dataset = self.trainset_config.version
         else:
             self.testset_config.start()
-            self.trainer_config.dataset = str(self.testset_config)
+            self.trainer_config.dataset = self.testset_config.version
         print('> data prepared\n')
 
         # # config
