@@ -9,7 +9,7 @@ nohup.out
 *log*/
 *tmp*/
 old/
-local/
+*local/
 # *archive
 
 # *.sh
@@ -41,7 +41,5 @@ local/
 
 
 # src
-!src/template_script
-src/*scripts
 
 # data
