@@ -1,7 +1,9 @@
 from _head import *
 
 
-class IDRRDatasetConfig(ExpArgs):
+@config_args
+@dataclass
+class IDRRDatasetConfig:
     '''
     config = IDRRDatasetConfig() \\
     use config.start() to create dataset
@@ -17,32 +19,32 @@ class IDRRDatasetConfig(ExpArgs):
     - del target_file and target_config_file
     - IDRRDatasetConfig.update_dataset_info()
     '''
-    def __init__(self, *args, **kwargs) -> None:
-        # ========== 'data' ========================
-        self.part1 = 'data'
-        self.data_name = 'pdtb3'
-        self.data_level = 'top'
-        self.data_relation = 'Implicit'
-        self.data_path = ''
-        self.data_split = 'train'
-        
-        # ========== 'base setting' ================
-        self.part2 = 'base setting'
-        self.prompt = {
+
+    # ========== data ========================
+    part1:str = 'data'
+    data_name:str = 'pdtb3'
+    data_level:str = 'top'
+    data_relation:str = 'Implicit'
+    data_path:str = ''
+    data_split:str = 'train'
+    
+    # ========== base setting ================
+    part2:str = 'base setting'
+    prompt:dict = dataclasses.field(
+        default_factory=lambda: {
             "instruction": "Figure out the relation between the pair of arguments. The answer should be one of (Expansion, Temporary, Contingency and Comparison).\n\nThe first argument is\n\n{arg1}\n\nThe second argument is\n\n{arg2}",
             "input": '',
             "output": '{label11}',
             "system": "",
             "history": []
         }
-        self.desc = '_test'
-        # self.max_seq_length = 2048
-        
-        # ========== 'additional info' =============
-        self.part3 = 'additional info'
-        self.set_create_time()
-
-        self.format_part()
+    )
+    
+    desc:str = '_test'
+    # max_seq_length = 2048
+    
+    # ========== additional info =============
+    part3:str = 'additional info'
 
     @property
     def version(self):
@@ -68,7 +70,7 @@ class IDRRDatasetConfig(ExpArgs):
 
     def start(self, update_dataset_info:bool=True):
         # check datapath
-        self.data_path = path(self.data_path)
+        self.data_path:path = path(self.data_path)
         assert self.data_path.exists()
         
         # check target_file
@@ -145,14 +147,9 @@ class IDRRDatasetConfig(ExpArgs):
 
 # arg1 arg2 conn1 conn2 
 # conn1sense1 conn1sense2 conn2sense1 conn2sense2
-
-# BuildDataset.format_part_in_file(__file__)
 if __name__ == '__main__':
-    # BuildDataset.remove_dataset(
-    #     dataset_name='pdtb3.top.2024_06_08_12_22_38.base.clip2048',
-    #     llama_factory_dir='/home/user/test/zpwang/LLaMA/LLaMA-Factory'
-    # )
-    # IDRRDatasetConfig.update_dataset_info()
+    # IDRRDatasetConfig().format_part_in_file(__file__)
+    # exit()
     sample = IDRRDatasetConfig()
     sample.data_name = 'pdtb3'
     sample.data_level = 'top'
@@ -164,4 +161,5 @@ if __name__ == '__main__':
     }
     sample.desc = '_local_test'
     sample.start()
-    sample.update_dataset_info()
+    # sample.update_dataset_info()
+

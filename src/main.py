@@ -4,64 +4,75 @@ from utils_zp.cuda import *
 from data_ import *
 
 
-class ExtraSetting(ExpArgs):
-    def __init__(self) -> None:
-        self.rest_mem_mb = 1000000
-        self.wait_befor_start = 3
+@config_args
+@dataclass
+class ExtraSetting:
+    rest_mem_mb:int = 1000000
+    wait_befor_start:int = 3
+    
+    output_scores:bool = True
+    do_dev:bool = False
+
+    # def __init__(self) -> None:
+    #     self.rest_mem_mb = 1000000
+    #     self.wait_befor_start = 3
         
-        self.output_scores = True
-        self.do_dev = False
+    #     self.output_scores = True
+    #     self.do_dev = False
 
 
-class LLaMALoraSFTConfig(ExpArgs):
-    def __init__(self, *args, **kwargs):
-        # model
-        self.model_name_or_path = '/home/user/test/pretrained_model/Llama-3-8B-Instruct'
-        self.adapter_name_or_path = None  #
-        
-        # method
-        self.stage = 'sft'
-        self.do_train = True
-        self.predict_with_generate = False  #
-        self.finetuning_type = 'lora'
-        self.lora_target = 'all'
-        self.lora_rank = 8  #
-        self.lora_alpha = 16  #
+@config_args
+@dataclass
+class LLaMALoraSFTConfig:
+    # model
+    model_name_or_path:str = '/home/user/test/pretrained_model/Llama-3-8B-Instruct'
+    adapter_name_or_path:Optional[str] = None  #
+    
+    # method
+    stage:str = 'sft'
+    do_train:bool = True
+    predict_with_generate:bool = False  #
+    finetuning_type:str = 'lora'
+    lora_target:str = 'all'
+    lora_rank:int = 8  #
+    lora_alpha:int = 16  #
 
-        # dataset
-        self.dataset = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
-        self.template = 'llama3'
-        self.cutoff_len = 2048
-        self.max_samples = 10**10
-        self.overwrite_cache = True
-        self.preprocessing_num_workers = 16
-        
-        # output
-        self.output_dir = '/home/user/test/zpwang/LLaMA/exp_space/test'
-        self.logging_steps = 10
-        self.save_steps = 1000
-        self.plot_loss = True
-        self.overwrite_output_dir = True
-        
-        # train
-        self.per_device_train_batch_size = 1
-        self.gradient_accumulation_steps = 8
-        self.learning_rate = 1.0e-4
-        self.num_train_epochs = 5.0
-        self.lr_scheduler_type = 'cosine'
-        self.warmup_ratio = 0.1
-        # self.fp16 = True
-        self.bf16 = True
-        self.ddp_timeout = 180000000
-        
-        # eval
-        self.val_size = 0
-        self.per_device_eval_batch_size = 1
-        self.eval_strategy = 'steps'
-        self.eval_steps = 10**9
+    # dataset
+    dataset:str = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
+    template:str = 'llama3'
+    cutoff_len:int = 2048
+    max_samples:int = 10**10
+    overwrite_cache:bool = True
+    preprocessing_num_workers:int = 16
+    
+    # output
+    output_dir:str = '/home/user/test/zpwang/LLaMA/exp_space/test'
+    logging_steps:int = 10
+    save_steps:int = 1000
+    plot_loss:bool = True
+    overwrite_output_dir:bool = True
+    
+    # train
+    per_device_train_batch_size:int = 1
+    gradient_accumulation_steps:int = 8
+    learning_rate:float = 1.0e-4
+    num_train_epochs:float = 5.0
+    lr_scheduler_type:str = 'cosine'
+    warmup_ratio:float = 0.1
+    # fp16:bool = True
+    bf16:bool = True
+    ddp_timeout:int = 180000000
+    
+    # eval
+    val_size:int = 0
+    per_device_eval_batch_size:int = 1
+    eval_strategy:str = 'steps'
+    eval_steps:int = 10**9
 
 
-class LLaMA(ExpArgs):
+@config_args
+@dataclass
+class LLaMA:
     '''
     final result dir is `self.output_dir/self.version`
 
@@ -74,29 +85,30 @@ class LLaMA(ExpArgs):
     cmd:
         `CUDA_VISIBLE_DEVICES=xx llamafactory-cli train {yaml_path}`
     '''
-    def __init__(self, *args, **kwargs) -> None:
-        # =========== data =======================
-        self.part1 = 'data'
-        self.trainset_config: IDRRDatasetConfig = None
-        # self.devset_config: IDRRDatasetConfig = None
-        self.testset_config: IDRRDatasetConfig = None
 
-        # =========== trainer ====================
-        self.part2 = 'trainer'
-        self.trainer_config = LLaMALoraSFTConfig()
-        self.extra_setting = ExtraSetting()
+    # ========== data ========================
+    part1:str = 'data'
+    trainset_config:IDRRDatasetConfig = None
+    testset_config:IDRRDatasetConfig = None
 
-        # =========== base =======================
-        self.part3 = 'base'
-        self.output_dir = '.'
-        self.desc = '_test'
+    # ========== trainer =====================
+    part2:str = 'trainer'
+    trainer_config:LLaMALoraSFTConfig = LLaMALoraSFTConfig()
+    extra_setting:ExtraSetting = ExtraSetting()
 
-        # =========== additonal ==================
-        self.part4 = 'additonal'
-        self.cuda_id = None
-        self._version_info_list = []
-        self.set_create_time()
-        self.format_part()
+    # ========== base ========================
+    part3:str = 'base'
+    output_dir:str = '.'
+    desc:str = '_test'
+
+    # ========== additonal ===================
+    part4:str = 'additonal'
+    cuda_id:str = None
+    _version_info_list:list = None
+
+    @property
+    def version(self):
+        return '.'.join(self._version_info_list)
 
     def start(self, is_train, target_mem_mb):
         # prepare data
@@ -123,7 +135,7 @@ class LLaMA(ExpArgs):
         make_path(dir_path=self.trainer_config.output_dir)
 
         arg_yaml_path = self.output_dir/'src_config.yaml'
-        auto_dump(self.trainer_config.json_dic, arg_yaml_path)
+        auto_dump(self.trainer_config.arg_dic, arg_yaml_path)
         # auto_dump(self.extra_setting, self.output_dir/'extra_setting.json')
         auto_dump(self, self.output_dir/'main_config.json')
 
@@ -142,5 +154,6 @@ class LLaMA(ExpArgs):
 
 if __name__ == '__main__':
     sample = LLaMA()
-    LLaMA().format_part_in_file(__file__)
+    sample.format_part_in_file(__file__)
+    print(sample)
     # sample.start(0, '/home/user/test/zpwang/LLaMA-Factory')
