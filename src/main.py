@@ -31,6 +31,8 @@ class LLaMALoraSFTConfig:
     # method
     stage:str = 'sft'
     do_train:bool = True
+    do_eval:bool = False
+    do_predict:bool = False
     predict_with_generate:bool = False  #
     finetuning_type:str = 'lora'
     lora_target:str = 'all'
@@ -59,15 +61,15 @@ class LLaMALoraSFTConfig:
     num_train_epochs:float = 5.0
     lr_scheduler_type:str = 'cosine'
     warmup_ratio:float = 0.1
-    # fp16:bool = True
-    bf16:bool = True
+    bf16:bool = False
+    fp16:bool = True
     ddp_timeout:int = 180000000
     
     # eval
-    val_size:int = 0
-    per_device_eval_batch_size:int = 1
-    eval_strategy:str = 'steps'
-    eval_steps:int = 10**9
+    # val_size:float = 0
+    # per_device_eval_batch_size:int = 1
+    # eval_strategy:str = 'steps'
+    # eval_steps:int = 10**9
 
 
 @config_args
@@ -108,7 +110,7 @@ class LLaMA:
 
     @property
     def version(self):
-        return '.'.join(self._version_info_list)
+        return '.'.join(map(str, self._version_info_list))
 
     def start(self, is_train, target_mem_mb):
         # prepare data
@@ -134,10 +136,12 @@ class LLaMA:
         assert not self.output_dir.exists()
         make_path(dir_path=self.trainer_config.output_dir)
 
+        arg_dic = self.trainer_config.arg_dic
+        del arg_dic['create_time']
         arg_yaml_path = self.output_dir/'src_config.yaml'
-        auto_dump(self.trainer_config.arg_dic, arg_yaml_path)
+        auto_dump(arg_dic, arg_yaml_path)
         # auto_dump(self.extra_setting, self.output_dir/'extra_setting.json')
-        auto_dump(self, self.output_dir/'main_config.json')
+        auto_dump(self.arg_dic, self.output_dir/'main_config.json')
 
         # set cuda and start running
         self.cuda_id = CUDAUtils.set_cuda_visible(
@@ -148,6 +152,7 @@ class LLaMA:
         cmd = f"""
         CUDA_VISIBLE_DEVICES={self.cuda_id} llamafactory-cli train {arg_yaml_path}
         """.strip()
+        print(cmd)
         os.system(cmd)
         pass
 

@@ -54,7 +54,7 @@ class IDRRDatasetConfig:
             self.desc,
             self.data_split,
         ]
-        return '.'.join(info_list)
+        return '.'.join(map(str, info_list))
         # return '.'.join(info_list).replace('-', '_')
     
     @property
@@ -108,7 +108,7 @@ class IDRRDatasetConfig:
         
         make_path(file_path=target_file)
         auto_dump(processed_data, target_file)
-        auto_dump(self, target_config_file)
+        auto_dump(self.arg_dic, target_config_file)
         if update_dataset_info:
             self.update_dataset_info(False)
 
@@ -124,7 +124,7 @@ class IDRRDatasetConfig:
             for filename in filenames:
                 if filename.endswith('.config.json'):
                     cfile = path(dirpath, filename)
-                    config = IDRRDatasetConfig(auto_load(cfile))
+                    config = IDRRDatasetConfig(**auto_load(cfile))
                     dataset_info[config.version] = {
                         'file_name': str(config.target_file),
                         # "columns": {
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     sample.data_name = 'pdtb3'
     sample.data_level = 'top'
     sample.data_relation = 'Implicit'
-    sample.data_path = r'D:\ZpWang\Projects\02.01-IDRR_data\data\used\pdtb3.p2.csv'
+    sample.data_path = ROOT_DIR/'data'/'used'/'pdtb3.p2.csv'
     sample.prompt = {
         'instruction': 'Arg1:\n{arg1}\n\nArg2:\n{arg2}',
         'output': '{label11id}',
