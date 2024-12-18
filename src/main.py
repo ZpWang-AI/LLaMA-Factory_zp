@@ -136,6 +136,11 @@ class LLaMA:
         assert not self.output_dir.exists()
         make_path(dir_path=self.trainer_config.output_dir)
 
+        self.cuda_id = CUDAUtils.set_cuda_visible(
+            target_mem_mb=target_mem_mb,
+            cuda_cnt=1,
+            device_range=None,
+        )
         arg_dic = self.trainer_config.arg_dic
         del arg_dic['create_time']
         arg_yaml_path = self.output_dir/'src_config.yaml'
@@ -144,11 +149,6 @@ class LLaMA:
         auto_dump(self.arg_dic, self.output_dir/'main_config.json')
 
         # set cuda and start running
-        self.cuda_id = CUDAUtils.set_cuda_visible(
-            target_mem_mb=target_mem_mb,
-            cuda_cnt=1,
-            device_range=None,
-        )
         cmd = f"""
         CUDA_VISIBLE_DEVICES={self.cuda_id} llamafactory-cli train {arg_yaml_path}
         """.strip()
