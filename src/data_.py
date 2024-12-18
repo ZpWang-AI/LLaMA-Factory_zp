@@ -20,8 +20,8 @@ class IDRRDatasetConfig:
     - IDRRDatasetConfig.update_dataset_info()
     '''
 
-    # ========== data ========================
-    part1:str = 'data'
+    # ========== dataframes ==================
+    part1:str = 'dataframes'
     data_name:str = 'pdtb3'
     data_level:str = 'top'
     data_relation:str = 'Implicit'
@@ -30,7 +30,7 @@ class IDRRDatasetConfig:
     
     # ========== base setting ================
     part2:str = 'base setting'
-    prompt:dict = dataclasses.field(
+    prompt:dict = field(
         default_factory=lambda: {
             "instruction": "Figure out the relation between the pair of arguments. The answer should be one of (Expansion, Temporary, Contingency and Comparison).\n\nThe first argument is\n\n{arg1}\n\nThe second argument is\n\n{arg2}",
             "input": '',
@@ -42,9 +42,6 @@ class IDRRDatasetConfig:
     
     desc:str = '_test'
     # max_seq_length = 2048
-    
-    # ========== additional info =============
-    part3:str = 'additional info'
 
     @property
     def version(self):
@@ -145,8 +142,8 @@ class IDRRDatasetConfig:
 # arg1 arg2 conn1 conn2 
 # conn1sense1 conn1sense2 conn2sense1 conn2sense2
 if __name__ == '__main__':
-    # IDRRDatasetConfig().format_part_in_file(__file__)
-    # exit()
+    IDRRDatasetConfig().format_part_in_file(__file__)
+    exit()
     sample = IDRRDatasetConfig()
     sample.data_name = 'pdtb3'
     sample.data_level = 'top'
