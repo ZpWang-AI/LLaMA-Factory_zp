@@ -36,12 +36,12 @@ if __name__ == "__main__":
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=32, # ===
+        max_samples=40, # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
-        logging_steps=10,
-        save_steps=16,
+        logging_steps=30,
+        save_steps=300,
         plot_loss=True,
         overwrite_output_dir=True,
 
@@ -51,6 +51,8 @@ if __name__ == "__main__":
         warmup_ratio=0.1,
         bf16=False,
         fp16=True,
+
+        eval_steps=1000,
     )
     
     extra_setting = ExtraSetting(

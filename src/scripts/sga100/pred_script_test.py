@@ -23,7 +23,7 @@ if __name__ == "__main__":
     )
 
     model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
-    ckpt_path = path('').resolve()
+    ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
     # print(model_path)
     # print(model_path.exists())
     trainer_config = LLaMALoraSFTConfig(
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
     ]
     
-    main.start(is_train=True, target_mem_mb=1000)
+    main.start(is_train=False, target_mem_mb=1000)
 
 
         

@@ -113,6 +113,12 @@ class IDRRDatasetConfig:
         
     @staticmethod
     def update_dataset_info(print_info:bool=True):
+        """
+        staticmethod func
+
+        update LLaMA-Factory.data.dataset_info.json \\
+        by files endswith `.config.json`
+        """
         IDRR_data_dir = LLAMA_FACTORY_DIR/'data'/'IDRR'
         make_path(IDRR_data_dir)
 

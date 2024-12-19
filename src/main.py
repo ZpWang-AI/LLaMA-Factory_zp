@@ -41,6 +41,7 @@ class LLaMALoraSFTConfig:
 
     # dataset
     dataset:str = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
+    eval_dataset:str = ''
     template:str = 'llama3'
     cutoff_len:int = 2048
     max_samples:int = 10**10
@@ -66,10 +67,10 @@ class LLaMALoraSFTConfig:
     ddp_timeout:int = 180000000
     
     # eval
-    # val_size:float = 0
-    # per_device_eval_batch_size:int = 1
-    # eval_strategy:str = 'steps'
-    # eval_steps:int = 10**9
+    # val_size:float = 0.1
+    per_device_eval_batch_size:int = 1
+    eval_strategy:str = 'steps'
+    eval_steps:int = 10**9
 
 
 @config_args
@@ -117,9 +118,12 @@ class LLaMA:
         if is_train:
             self.trainset_config.start()
             self.trainer_config.dataset = self.trainset_config.version
+            self.trainer_config.eval_dataset = self.trainset_config.version
         else:
             self.testset_config.start()
             self.trainer_config.dataset = self.testset_config.version
+            self.trainer_config.eval_dataset = self.testset_config.version
+        IDRRDatasetConfig.update_dataset_info(print_info=False)
         print('> data prepared\n')
 
         # # config
@@ -133,8 +137,9 @@ class LLaMA:
         self.output_dir = path(self.output_dir) / self.version
         self.trainer_config.output_dir = self.output_dir / 'src_output'
         assert path(self.trainer_config.model_name_or_path).exists()
-        assert not self.output_dir.exists()
+        assert not path(self.output_dir).exists()
         make_path(dir_path=self.trainer_config.output_dir)
+        log_path = self.trainer_config.output_dir/'nohup.log'
 
         self.cuda_id = CUDAUtils.set_cuda_visible(
             target_mem_mb=target_mem_mb,
@@ -149,11 +154,22 @@ class LLaMA:
         auto_dump(self.arg_dic, self.output_dir/'main_config.json')
 
         # set cuda and start running
-        cmd = f"""
-        CUDA_VISIBLE_DEVICES={self.cuda_id} llamafactory-cli train {arg_yaml_path}
-        """.strip()
+        cmd = (
+            f'CUDA_VISIBLE_DEVICES={self.cuda_id} nohup '
+            f'llamafactory-cli train {arg_yaml_path} '
+            f'> {log_path} 2>&1 &'
+        )
         print(cmd)
-        os.system(cmd)
+        subprocess.run(
+            cmd,
+            shell=True,
+            text=True,
+        )
+        # cmd = f"""
+        # CUDA_VISIBLE_DEVICES={self.cuda_id} llamafactory-cli train {arg_yaml_path}
+        # """.strip()
+        # print(cmd)
+        # os.system(cmd)
         pass
 
 
