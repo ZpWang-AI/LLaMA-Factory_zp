@@ -27,6 +27,7 @@ class LLaMALoraSFTConfig:
     # model
     model_name_or_path:str = '/home/user/test/pretrained_model/Llama-3-8B-Instruct'
     adapter_name_or_path:Optional[str] = None  #
+    trust_remote_code:bool = True
     
     # method
     stage:str = 'sft'

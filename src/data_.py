@@ -57,7 +57,7 @@ class IDRRDatasetConfig:
     @property
     def target_file(self):
         return path(
-            LLAMA_FACTORY_DIR, 'data', 'IDRR',
+            ROOT_DIR, 'data', 'IDRR',
             f'{self.data_name}.{self.data_level}',
             self.desc, self.data_split + '.json'
         )
