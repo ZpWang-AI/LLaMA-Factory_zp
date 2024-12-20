@@ -62,19 +62,27 @@ if __name__ == "__main__":
         do_dev=False,
     )
 
+    cuda_id = CUDAUtils.set_cuda_visible(
+        target_mem_mb=15000,
+        cuda_cnt=1,
+        device_range=None,
+    )
+
     main = LLaMA(
         trainset_config=trainset_config,
+        testset_config=OneShotDatasetConfig(),
         trainer_config=trainer_config,
         extra_setting=extra_setting,
         output_dir=ROOT_DIR/'exp_space'/'Inbox',
         desc='_local_test',
+        cuda_id=cuda_id,
     )
     main._version_info_list = [
         Datetime_().format_str(2), main.desc, 
         f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
     ]
     
-    main.start(is_train=True, target_mem_mb=1000)
+    main.start(bg_run=False)
 
 
         

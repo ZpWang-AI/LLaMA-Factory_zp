@@ -41,7 +41,7 @@ class LLaMALoraSFTConfig:
     lora_alpha:int = 16  #
 
     # dataset
-    dataset_dir:str = ROOT_DIR/'data'
+    dataset_dir:str = LLAMA_FACTORY_DATASET_DIR
     dataset:str = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
     eval_dataset:str = ''
     template:str = 'llama3'
@@ -93,8 +93,8 @@ class LLaMA:
 
     # ========== data ========================
     part1:str = 'data'
-    trainset_config:IDRRDatasetConfig = None
-    testset_config:IDRRDatasetConfig = None
+    trainset_config:DatasetConfig = None
+    testset_config:DatasetConfig = None
 
     # ========== trainer =====================
     part2:str = 'trainer'
@@ -115,17 +115,13 @@ class LLaMA:
     def version(self):
         return '.'.join(map(str, self._version_info_list))
 
-    def start(self, is_train, target_mem_mb):
+    def start(self, bg_run=True):
         # prepare data
-        if is_train:
-            self.trainset_config.start()
-            self.trainer_config.dataset = self.trainset_config.version
-            self.trainer_config.eval_dataset = self.trainset_config.version
-        else:
-            self.testset_config.start()
-            self.trainer_config.dataset = self.testset_config.version
-            self.trainer_config.eval_dataset = self.testset_config.version
-        IDRRDatasetConfig.update_dataset_info(print_info=False)
+        self.trainset_config.start()
+        self.testset_config.start()
+        self.trainer_config.dataset = self.trainset_config.version
+        self.trainer_config.eval_dataset = self.testset_config.version
+        DatasetConfig.update_dataset_info(print_info=False)
         print('> data prepared\n')
 
         # # config
@@ -143,11 +139,6 @@ class LLaMA:
         make_path(dir_path=self.trainer_config.output_dir)
         log_path = self.trainer_config.output_dir/'nohup.log'
 
-        self.cuda_id = CUDAUtils.set_cuda_visible(
-            target_mem_mb=target_mem_mb,
-            cuda_cnt=1,
-            device_range=None,
-        )
         arg_dic = self.trainer_config.arg_dic
         del arg_dic['create_time']
         arg_yaml_path = self.output_dir/'src_config.yaml'
@@ -155,13 +146,19 @@ class LLaMA:
         # auto_dump(self.extra_setting, self.output_dir/'extra_setting.json')
         auto_dump(self.arg_dic, self.output_dir/'main_config.json')
 
-        # set cuda and start running
-        cmd = (
-            f'CUDA_VISIBLE_DEVICES={self.cuda_id} nohup '
-            f'llamafactory-cli train {arg_yaml_path} '
-            f'> {log_path} 2>&1 &'
-        )
-        print(cmd)
+        # start running
+        if bg_run:
+            cmd = (
+                f'CUDA_VISIBLE_DEVICES={self.cuda_id} nohup '
+                f'llamafactory-cli train {arg_yaml_path} '
+                f'> {log_path} 2>&1 &'
+            )
+        else:
+            cmd = (
+                f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
+                f'llamafactory-cli train {arg_yaml_path}'
+            )
+        print(cmd+'\n')
         subprocess.run(
             cmd,
             shell=True,

@@ -3,14 +3,19 @@ from _head import *
 
 @config_args
 @dataclass
-class IDRRDatasetConfig:
+class DatasetConfig:
     '''
-    config = IDRRDatasetConfig() \\
+    config = DatasetConfig() \\
     use config.start() to create dataset
 
     dataset_name = config.version
 
-    auto update files in LLaMA-Factory/data:
+    new_class:
+    - get_dataset
+    - version (property)
+    - target_file (property)
+
+    auto update files in LLaMA-Factory_zp/data/llama_factory:
     - dataset_info.json
     - target_file (example: IDRR/pdtb3.top/desc/train.json)
     - target_config_file (example: IDRR/pdtb3.top/desc/train.config.json)
@@ -20,6 +25,97 @@ class IDRRDatasetConfig:
     - IDRRDatasetConfig.update_dataset_info()
     '''
 
+    def get_dataset(self) -> List[dict]: ...
+
+    @property
+    def version(self) -> str: ...
+
+    @property
+    def target_file(self) -> path: ...
+
+    @property
+    def target_config_file(self) -> path:
+        target_file = path(self.target_file)
+        return target_file.parent / (target_file.stem + '.config.json')
+
+    def start(self): 
+        # check target_file
+        if self.target_file.exists() and self.target_config_file.exists():
+            print(f'> Dataset "{self.version}" has been created')
+            return
+
+        make_path(file_path=self.target_file)
+        auto_dump(self.get_dataset(), self.target_file)
+        arg_dic:dict = self.arg_dic
+        arg_dic['version'] = self.version
+        arg_dic['target_file'] = self.target_file
+        auto_dump(arg_dic, self.target_config_file)
+        self.update_dataset_info(False)
+
+        print(f'> Succeed adding "{self.version}"')
+
+    @staticmethod
+    def update_dataset_info(print_info:bool=True):
+        """
+        staticmethod func
+
+        update dataset_info.json \\
+        by files endswith `.config.json`
+        """
+        make_path(dir_path=LLAMA_FACTORY_DATASET_DIR)
+
+        dataset_info = {}
+        for dirpath, dirnames, filenames in os.walk(LLAMA_FACTORY_DATASET_DIR):
+            for filename in filenames:
+                if filename.endswith('.config.json'):
+                    cfile = path(dirpath, filename)
+                    config = auto_load(cfile)
+                    dataset_info[config['version']] = {
+                        'file_name': str(config['target_file']),
+                        # "columns": {
+                        #     "prompt": "instruction",
+                        #     "query": "input",
+                        #     "response": "output",
+                        #     "system": "system",
+                        #     "history": "history"
+                        # }
+                    }
+        
+        auto_dump(dataset_info, LLAMA_FACTORY_DATASET_DIR/'dataset_info.json')
+        if print_info:
+            print(f'> dataset_info.json updated')
+
+
+@config_args
+@dataclass
+class OneShotDatasetConfig(DatasetConfig):
+    @property
+    def version(self):
+        return 'one_shot'
+
+    @property
+    def target_file(self):
+        return path(LLAMA_FACTORY_DATASET_DIR/'specific'/'one_shot.json')
+    
+    def get_dataset(self):
+        return [
+            {
+                "instruction": "Input",
+                "input": '',
+                "output": 'Label',
+                "system": "",
+                "history": []
+            }
+        ]
+        
+
+@config_args
+@dataclass
+class IDRRDatasetConfig(DatasetConfig):
+    '''
+    DatasetConfig
+    '''
+    
     # ========== dataframes ==================
     part1:str = 'dataframes'
     data_name:str = 'pdtb3'
@@ -57,22 +153,15 @@ class IDRRDatasetConfig:
     @property
     def target_file(self):
         return path(
-            ROOT_DIR, 'data', 'IDRR',
-            f'{self.data_name}.{self.data_level}',
+            LLAMA_FACTORY_DATASET_DIR,
+            f'IDRR.{self.data_name}.{self.data_level}',
             self.desc, self.data_split + '.json'
         )
 
-    def start(self, update_dataset_info:bool=True):
+    def get_dataset(self):
         # check datapath
         self.data_path:path = path(self.data_path)
         assert self.data_path.exists()
-        
-        # check target_file
-        target_file = self.target_file
-        target_config_file = target_file.parent / (self.data_split + '.config.json')
-        if target_file.exists():
-            print(f'> Dataset "{self.version}" has been created')
-            return
 
         # create dataset
         # get dataframes
@@ -90,7 +179,7 @@ class IDRRDatasetConfig:
         processed_data = [
             d for d in filled_prompts if d['output'] 
         ]
-        
+
         # if self.max_seq_length:
         #     def clip_func(piece_of_data):
         #         for k, v in piece_of_data.items():
@@ -101,48 +190,21 @@ class IDRRDatasetConfig:
             
         if not processed_data:
             print(f'> "{self.version}" has no data')
-            return
+            return []
         
-        make_path(file_path=target_file)
-        auto_dump(processed_data, target_file)
-        auto_dump(self.arg_dic, target_config_file)
+        return processed_data
+        
+        make_path(file_path=self.target_file)
+        auto_dump(processed_data, self.target_file)
+        arg_dic:dict = self.arg_dic
+        arg_dic['version'] = self.version
+        arg_dic['target_file'] = self.target_file
+        auto_dump(arg_dic, self.target_config_file)
         if update_dataset_info:
             self.update_dataset_info(False)
 
         print(f'> Succeed adding "{self.version}"')
         
-    @staticmethod
-    def update_dataset_info(print_info:bool=True):
-        """
-        staticmethod func
-
-        update LLaMA-Factory.data.dataset_info.json \\
-        by files endswith `.config.json`
-        """
-        IDRR_data_dir = ROOT_DIR/'data'/'IDRR'
-        make_path(IDRR_data_dir)
-
-        dataset_info = {}
-        for dirpath, dirnames, filenames in os.walk(IDRR_data_dir):
-            for filename in filenames:
-                if filename.endswith('.config.json'):
-                    cfile = path(dirpath, filename)
-                    config = IDRRDatasetConfig(**auto_load(cfile))
-                    dataset_info[config.version] = {
-                        'file_name': str(config.target_file),
-                        # "columns": {
-                        #     "prompt": "instruction",
-                        #     "query": "input",
-                        #     "response": "output",
-                        #     "system": "system",
-                        #     "history": "history"
-                        # }
-                    }
-        
-        auto_dump(dataset_info, ROOT_DIR/'data'/'dataset_info.json')
-        if print_info:
-            print(f'> dataset_info.json updated')
-
 
 
 # arg1 arg2 conn1 conn2 
