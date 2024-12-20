@@ -119,7 +119,7 @@ class IDRRDatasetConfig:
         update LLaMA-Factory.data.dataset_info.json \\
         by files endswith `.config.json`
         """
-        IDRR_data_dir = LLAMA_FACTORY_DIR/'data'/'IDRR'
+        IDRR_data_dir = ROOT_DIR/'data'/'IDRR'
         make_path(IDRR_data_dir)
 
         dataset_info = {}
@@ -139,7 +139,7 @@ class IDRRDatasetConfig:
                         # }
                     }
         
-        auto_dump(dataset_info, LLAMA_FACTORY_DIR/'data'/'dataset_info.json')
+        auto_dump(dataset_info, ROOT_DIR/'data'/'dataset_info.json')
         if print_info:
             print(f'> dataset_info.json updated')
 
