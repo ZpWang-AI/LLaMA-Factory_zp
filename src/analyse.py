@@ -8,13 +8,18 @@ from sklearn.metrics import f1_score, accuracy_score
 class Analyser:
     @staticmethod
     def process_predict(fold_path:path):
-        json_path = fold_path/'output'/'generated_predictions.jsonl'
+        '''
+        get raw output from fold_path.src_output
+
+        get ckpt_num from last part in fold_path split by `.`
+        '''
+        json_path = fold_path/'src_output'/'generated_predictions.jsonl'
         if not json_path.exists():
             print(fold_path)
             print('process predict fail\n')
             return
         
-        with open(fold_path/'output'/'all_results.json', 'r', encoding='utf8')as f:
+        with open(fold_path/'src_output'/'all_results.json', 'r', encoding='utf8')as f:
             predict_output = json.load(f)
         predict_runtime = predict_output['predict_runtime']
 
@@ -32,11 +37,12 @@ class Analyser:
                 labels_init.append(dic['label'])
                 predictions_init.append(dic['predict'])
 
-        label_list = []
-        for label in labels_init:
-            label_list.extend(label.split('\n'))
-        label_list = [label.strip()for label in set(label_list)if label.strip()]
-        label_list = sorted(filter(lambda x:any(x not in p for p in labels_init), label_list))
+        label_list = list(set(labels_init))
+        # label_list = []
+        # for label in labels_init:
+        #     label_list.extend(label.split('\n'))
+        # label_list = [label.strip()for label in set(label_list)if label.strip()]
+        # label_list = sorted(filter(lambda x:any(x not in p for p in labels_init), label_list))
         # label_list = sorted(label.strip() for label in set(labels_init))
         # label_list =  sorted(set(labels_init))
 
@@ -94,7 +100,10 @@ class Analyser:
         
     @staticmethod
     def process_sft(fold_path:path):
-        output_path = fold_path/'output'/'train_results.json'
+        '''
+        get raw output from fold_path.src_output
+        '''
+        output_path = fold_path/'src_output'/'train_results.json'
         if not output_path.exists():
             print(output_path)
             print('process sft fail')
