@@ -4,7 +4,7 @@ from _head import *
 cuda_id, rest_mem_mb, wait_befor_start, arg_yaml_path = sys.argv[1:]
 
 balancer = CUDABalancer(
-    cuda_ids=[int(cuda_id)],
+    cuda_ids=[0],
     rest_mem_mb=rest_mem_mb,
     wait_before_start=wait_befor_start,
 )
