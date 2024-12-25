@@ -100,7 +100,7 @@ D. Temporal
         )
         main._version_info_list = [
             Datetime_().format_str(2), main.desc, 
-            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
+            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred'
         ]
         
         main.start(bg_run=True)
