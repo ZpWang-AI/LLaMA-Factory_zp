@@ -110,7 +110,7 @@ class Analyser:
             return
         with open(output_path, 'r', encoding='utf8')as f:
             train_output = json.load(f)
-        with open(fold_path/'log', 'r', encoding='utf8')as f:
+        with open(fold_path/'nohup.log', 'r', encoding='utf8')as f:
             for line in f.readlines():
                 if 'Num examples' in line:
                     train_output['sample_num'] = line.split('=')[-1].strip()

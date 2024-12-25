@@ -49,7 +49,7 @@ D. Temporal
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=40, # ===
+        # max_samples=40, # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
@@ -76,7 +76,7 @@ D. Temporal
     )
 
     cuda_id = CUDAUtils.set_cuda_visible(
-        target_mem_mb=15000,
+        target_mem_mb=20000,
         cuda_cnt=1,
         device_range=None,
     )
