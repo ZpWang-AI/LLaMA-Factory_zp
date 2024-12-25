@@ -108,7 +108,8 @@ D. Temporal
 
     ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-23_13-12-16._baseline.bs1-8_lr0.0001_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
-    ckpt_path_lst = listdir_full_path(ckpt_dir) + [ckpt_dir]
+    ckpt_path_lst = [p for p in listdir_full_path(ckpt_dir) if p.is_dir()]
+    ckpt_path_lst.append(ckpt_dir)
     for ckpt_path in ckpt_path_lst:
         predict(ckpt_path)
 
