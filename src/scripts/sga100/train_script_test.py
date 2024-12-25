@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=40, # ===
+        max_samples=100, # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 

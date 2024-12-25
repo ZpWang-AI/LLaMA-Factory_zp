@@ -11,7 +11,7 @@ class ExtraSetting:
     wait_befor_start:int = 3
     
     output_scores:bool = True
-    do_dev:bool = False
+    # do_dev:bool = False
 
     # def __init__(self) -> None:
     #     self.rest_mem_mb = 1000000
@@ -115,7 +115,8 @@ class LLaMA:
     def version(self):
         return '.'.join(map(str, self._version_info_list))
 
-    def start(self, bg_run=True):
+    def start(self):
+        # =======================================
         # prepare data
         self.trainset_config.start()
         self.testset_config.start()
@@ -130,46 +131,44 @@ class LLaMA:
         # else:
         #     self.trainer_config.eval_steps = 10**10
 
+        # =======================================
         # path
         os.chdir(LLAMA_FACTORY_DIR)
-        self.output_dir = path(self.output_dir) / self.version
-        self.trainer_config.output_dir = self.output_dir / 'src_output'
+        final_output_dir = path(self.output_dir) / self.version
+        self.trainer_config.output_dir = final_output_dir / 'src_output'
         assert path(self.trainer_config.model_name_or_path).exists()
-        assert not path(self.output_dir).exists()
+        assert not path(final_output_dir).exists()
         make_path(dir_path=self.trainer_config.output_dir)
-        log_path = self.trainer_config.output_dir/'nohup.log'
+        # log_path = self.trainer_config.output_dir/'nohup.log'
 
         arg_dic = self.trainer_config.arg_dic
         del arg_dic['create_time']
-        arg_yaml_path = self.output_dir/'src_config.yaml'
+        arg_yaml_path = final_output_dir/'src_config.yaml'
         auto_dump(arg_dic, arg_yaml_path)
-        # auto_dump(self.extra_setting, self.output_dir/'extra_setting.json')
-        auto_dump(self.arg_dic, self.output_dir/'main_config.json')
+        # auto_dump(self.extra_setting, final_output_dir/'extra_setting.json')
+        auto_dump(self.arg_dic, final_output_dir/'main_config.json')
 
+        # =======================================
         # start running
-        if bg_run:
-            cmd = (
-                f'CUDA_VISIBLE_DEVICES={self.cuda_id} nohup '
-                f'llamafactory-cli train {arg_yaml_path} '
-                f'> {log_path} 2>&1 &'
-            )
-        else:
-            cmd = (
-                f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
-                f'llamafactory-cli train {arg_yaml_path}'
-            )
+        balancer = CUDABalancer(
+            cuda_ids=[int(self.cuda_id)],
+            rest_mem_mb=self.extra_setting.rest_mem_mb,
+            wait_before_start=self.extra_setting.wait_befor_start,
+        )
+        balancer.start()
+        
+        cmd = (
+            f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
+            f'llamafactory-cli train {arg_yaml_path}'
+        )
         print(cmd+'\n')
         subprocess.run(
             cmd,
             shell=True,
             text=True,
         )
-        # cmd = f"""
-        # CUDA_VISIBLE_DEVICES={self.cuda_id} llamafactory-cli train {arg_yaml_path}
-        # """.strip()
-        # print(cmd)
-        # os.system(cmd)
-        pass
+
+        balancer.close()
 
 
 if __name__ == '__main__':

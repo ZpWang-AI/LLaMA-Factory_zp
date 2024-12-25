@@ -82,8 +82,13 @@ D. Temporal
         device_range=None,
     )
 
-    def predict(ckpt_path):
+    def predict(ckpt_path, ckpt_num):
         trainer_config.adapter_name_or_path = ckpt_path
+
+        testset_config.set_create_time()
+        trainer_config.set_create_time()
+        extra_setting.set_create_time()
+
         CUDAUtils.get_free_cudas(
             target_mem_mb=target_mem_mb,
             cuda_cnt=1,
@@ -100,7 +105,7 @@ D. Temporal
         )
         main._version_info_list = [
             Datetime_().format_str(2), main.desc, 
-            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred'
+            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
         ]
         
         main.start(bg_run=True)
@@ -108,9 +113,10 @@ D. Temporal
 
     ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-23_13-12-16._baseline.bs1-8_lr0.0001_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
-    ckpt_path_lst = [p for p in listdir_full_path(ckpt_dir) if p.is_dir()]
-    ckpt_path_lst.append(ckpt_dir)
-    for ckpt_path in ckpt_path_lst:
-        predict(ckpt_path)
+    predict(ckpt_dir, 'final')
+    
+    for p in listdir_full_path(ckpt_dir):
+        if p.stem.startswith('checkpoint-'):
+            predict(p, p.stem.split('-')[-1])
 
         
