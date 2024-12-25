@@ -153,7 +153,7 @@ class LLaMA:
         main_file = path(__file__).parent / 'main_file.py'
         cmd = (
             f'nohup python {main_file} '
-            f'{self.cuda_id} {self.extra_setting.rest_mem_mb} { self.extra_setting.wait_befor_start} {arg_yaml_path} '
+            f'{self.cuda_id} {self.extra_setting.rest_mem_mb} {self.extra_setting.wait_befor_start} {arg_yaml_path} '
             f'> {log_path} 2>&1 &'
         )
         # cuda_id, rest_mem_mb, wait_befor_start, arg_yaml_path
@@ -161,6 +161,7 @@ class LLaMA:
             cmd, shell=True, text=True,
         )
 
+        print(cmd)
         print(f'> output log to:\n{log_path}')
 
 

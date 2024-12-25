@@ -8,7 +8,7 @@ balancer = CUDABalancer(
     rest_mem_mb=rest_mem_mb,
     wait_before_start=wait_befor_start,
 )
-balancer.start()
+# balancer.start()
 
 cmd = (
     f'CUDA_VISIBLE_DEVICES={cuda_id} '
