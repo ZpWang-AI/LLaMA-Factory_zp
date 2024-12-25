@@ -11,7 +11,7 @@ class ExtraSetting:
     wait_befor_start:int = 3
     
     output_scores:bool = True
-    # do_dev:bool = False
+    do_dev:bool = False  # TODO
 
     # def __init__(self) -> None:
     #     self.rest_mem_mb = 1000000
@@ -139,7 +139,7 @@ class LLaMA:
         assert path(self.trainer_config.model_name_or_path).exists()
         assert not path(final_output_dir).exists()
         make_path(dir_path=self.trainer_config.output_dir)
-        # log_path = self.trainer_config.output_dir/'nohup.log'
+        log_path = self.trainer_config.output_dir/'nohup.log'
 
         arg_dic = self.trainer_config.arg_dic
         del arg_dic['create_time']
@@ -150,25 +150,18 @@ class LLaMA:
 
         # =======================================
         # start running
-        balancer = CUDABalancer(
-            cuda_ids=[int(self.cuda_id)],
-            rest_mem_mb=self.extra_setting.rest_mem_mb,
-            wait_before_start=self.extra_setting.wait_befor_start,
-        )
-        balancer.start()
-        
+        main_file = path(__file__).parent / 'main_file.py'
         cmd = (
-            f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
-            f'llamafactory-cli train {arg_yaml_path}'
+            f'nohup python {main_file} '
+            f'{self.cuda_id} {self.extra_setting.rest_mem_mb} { self.extra_setting.wait_befor_start} {arg_yaml_path} '
+            f'> {log_path} 2>&1 &'
         )
-        print(cmd+'\n')
+        # cuda_id, rest_mem_mb, wait_befor_start, arg_yaml_path
         subprocess.run(
-            cmd,
-            shell=True,
-            text=True,
+            cmd, shell=True, text=True,
         )
 
-        balancer.close()
+        print(f'> output log to:\n{log_path}')
 
 
 if __name__ == '__main__':

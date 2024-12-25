@@ -36,12 +36,12 @@ if __name__ == "__main__":
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=100, # ===
+        max_samples=100,  # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
-        logging_steps=30,
-        save_steps=300,
+        logging_steps=30,  # ===
+        save_steps=300,  # ===
         plot_loss=True,
         overwrite_output_dir=True,
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         bf16=False,
         fp16=True,
 
-        eval_steps=1000,
+        eval_steps=1000,  # ===
     )
     
     extra_setting = ExtraSetting(
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
     ]
     
-    main.start(bg_run=False)
+    main.start()
 
 
         
