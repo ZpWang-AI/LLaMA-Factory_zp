@@ -12,25 +12,39 @@ if __name__ == "__main__":
     testset_config = IDRRDatasetConfig(
         data_split='test',
         prompt={
-            "instruction": "Figure out the relation between the pair of arguments. The answer should be one of (Expansion, Temporary, Contingency and Comparison).\n\nThe first argument is\n\n{arg1}\n\nThe second argument is\n\n{arg2}",
+            "instruction": '''
+Argument 1:
+{arg1}
+
+Argument 2:
+{arg2}
+
+What's the discourse relation between Argument 1 and Argument 2?
+A. Comparison
+B. Contingency
+C. Expansion
+D. Temporal
+
+'''.strip(),
             "input": '',
             "output": '{label11}',
             "system": "",
             "history": [],
         },
-        desc='_local_test',
+        desc='base_multi-choice',
         **dfs.arg_dic,
     )
 
     model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
-    ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
+    # ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
     # print(model_path)
     # print(model_path.exists())
     trainer_config = LLaMALoraSFTConfig(
         model_name_or_path=model_path,
-        adapter_name_or_path=ckpt_path,
+        # adapter_name_or_path=ckpt_path,
 
         do_train=False,
+        do_eval=False,
         do_predict=True,
         predict_with_generate=True,
         lora_rank=8,
@@ -42,17 +56,19 @@ if __name__ == "__main__":
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
-        logging_steps=10,
-        save_steps=16,
+        logging_steps=100,
+        save_steps=1000,
         plot_loss=True,
         overwrite_output_dir=True,
 
         gradient_accumulation_steps=8,
-        learning_rate=5e-5,
+        learning_rate=1e-4,
         num_train_epochs=5,
         warmup_ratio=0.1,
         bf16=False,
         fp16=True,
+
+        eval_steps=1000000,
     )
     
     extra_setting = ExtraSetting(
@@ -62,27 +78,48 @@ if __name__ == "__main__":
         do_dev=False,
     )
 
+    target_mem_mb = 20000
     cuda_id = CUDAUtils.set_cuda_visible(
-        target_mem_mb=15000,
+        target_mem_mb=target_mem_mb,
         cuda_cnt=1,
         device_range=None,
     )
 
-    main = LLaMA(
-        trainset_config=OneShotDatasetConfig(),
-        testset_config=testset_config,
-        trainer_config=trainer_config,
-        extra_setting=extra_setting,
-        output_dir=ROOT_DIR/'exp_space'/'Inbox',
-        desc='_local_test',
-        cuda_id=cuda_id,
-    )
-    main._version_info_list = [
-        Datetime_().format_str(2), main.desc, 
-        f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
-    ]
-    
-    main.start(bg_run=False)
+    def predict(ckpt_path, ckpt_num):
+        trainer_config.adapter_name_or_path = ckpt_path
 
+        testset_config.set_create_time()
+        trainer_config.set_create_time()
+        extra_setting.set_create_time()
+
+        CUDAUtils.get_free_cudas(
+            target_mem_mb=target_mem_mb,
+            cuda_cnt=1,
+            device_range=[int(cuda_id)],
+        )
+        main = LLaMA(
+            trainset_config=OneShotDatasetConfig(),
+            testset_config=testset_config,
+            trainer_config=trainer_config,
+            extra_setting=extra_setting,
+            output_dir=ROOT_DIR/'exp_space'/'Inbox',
+            desc='_local_test',
+            cuda_id=cuda_id,
+        )
+        main._version_info_list = [
+            Datetime_().format_str(2), main.desc, 
+            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
+        ]
+        
+        main.start()
+        time.sleep(100)
+
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-27_08-33-01._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = path(ckpt_dir) / 'src_output'
+    predict(ckpt_dir, 'final')
+    
+    for p in listdir_full_path(ckpt_dir):
+        if p.stem.startswith('checkpoint-'):
+            predict(p, p.stem.split('-')[-1])
 
         

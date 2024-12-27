@@ -161,8 +161,19 @@ class LLaMA:
             cmd, shell=True, text=True,
         )
 
-        print(cmd)
+        print(cmd+'\n')
+
+        subprocess.run(
+            "ps -aux | grep -v grep | grep -v .vscode-server | grep -v /code-server/ | grep -v /gpustat | grep zp | grep -v 'ps -aux'", 
+            shell=True,
+            text=True,
+        )
+
+        print()
         print(f'> output log to:\n{log_path}')
+        # print()
+        # print()
+        
 
 
 if __name__ == '__main__':

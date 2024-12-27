@@ -36,12 +36,12 @@ if __name__ == "__main__":
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=100,  # ===
+        max_samples=25,  # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
-        logging_steps=30,  # ===
-        save_steps=300,  # ===
+        logging_steps=1,  # ===
+        save_steps=5,  # ===
         plot_loss=True,
         overwrite_output_dir=True,
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     )
     main._version_info_list = [
         Datetime_().format_str(2), main.desc, 
-        f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}'
+        f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.train'
     ]
     
     main.start()
