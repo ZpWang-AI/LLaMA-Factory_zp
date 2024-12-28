@@ -170,7 +170,7 @@ class LLaMA:
         )
 
         print()
-        print(f'> output log to:\n{log_path}')
+        print(f'> log:\n{log_path}')
         # print()
         # print()
         

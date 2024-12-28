@@ -102,24 +102,30 @@ D. Temporal
             testset_config=testset_config,
             trainer_config=trainer_config,
             extra_setting=extra_setting,
-            output_dir=ROOT_DIR/'exp_space'/'Inbox',
+            # output_dir=ROOT_DIR/'exp_space'/'Inbox',
+            output_dir=ckpt_dir.parent,
             desc='_local_test',
             cuda_id=cuda_id,
         )
         main._version_info_list = [
             Datetime_().format_str(2), main.desc, 
-            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
+            # f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
+            f'pred.ckpt-{ckpt_num}',
         ]
         
         main.start()
         time.sleep(100)
 
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-27_08-33-01._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
-    predict(ckpt_dir, 'final')
-    
-    for p in listdir_full_path(ckpt_dir):
-        if p.stem.startswith('checkpoint-'):
-            predict(p, p.stem.split('-')[-1])
 
+    to_predict_list = []
+    for p in sorted(listdir_full_path(ckpt_dir)):
+        if p.stem.startswith('checkpoint-'):
+            to_predict_list.append((p, p.stem.split('-')[-1]))
+
+    to_predict_list.sort(key=lambda x:int(x[1]))
+    for a,b in to_predict_list:
+        predict(a,b)
+    predict(ckpt_dir, 'final')
         
