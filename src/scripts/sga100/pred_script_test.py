@@ -116,7 +116,7 @@ D. Temporal
         main.start()
         time.sleep(100)
 
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/example/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
 
     to_predict_list = []

@@ -2,17 +2,18 @@
 
 Do training and prediction using LLaMA
 
-## Running Tips 
+## Running Steps 
 
-1. run `src/template_script/dataset_script.py`
+<!-- 1. run `src/template_script/dataset_script.py` -->
 
-2. run `src/template_script/train_script.py`
+- run `src/scripts/train_script_test.py`
 
-3. run `src/template_script/pred_script.py`
+- run `src/scripts/pred_script_test.py`
 
-4. run `src/calculate_metric.py`
+- run `src/analyse.py`
 
-5. run `src/eval_confidence_scores.py`
+- run `src/eval_confidence_scores.py`
+
 
 ## Prompt
 

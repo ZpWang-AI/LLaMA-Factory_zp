@@ -1,6 +1,4 @@
 from utils_zp import *
-import_np()
-import_plt()
 
 from sklearn.metrics import f1_score, accuracy_score
 
@@ -86,6 +84,7 @@ class Analyser:
         if output_json is None:
             output_json = target_dir / 'result.json'
         auto_dump(res_dic, output_json)
+        print(output_json)
         return res_dic
         # result_string = '\n'.join([
         #     f'tot: {total_num}',
@@ -122,7 +121,7 @@ class Analyser:
         root_path = path(root_path)
         pred_outputs = []
         for son_fold in sorted(listdir_full_path(root_path)):
-            if 'predict' in str(son_fold):
+            if 'ckpt-' in str(son_fold):
                 pred_outputs.append(Analyser.process_predict(son_fold))
         train_output = Analyser.process_sft(root_path)
 
@@ -148,8 +147,8 @@ class Analyser:
             'pred_runtime': pred_runtime, 
         } | train_output
         result_dic['wrong'] = wrong_output
-        with open(root_path/'result.json', 'w', encoding='utf8')as f:
-            json.dump(result_dic, f, indent=2)
+        auto_dump(result_dic, root_path/'result.json')
+        print(root_path/'result.json')
         
         plt.plot(xs, ys)
         for xi, yi in zip(xs, ys):
@@ -160,7 +159,7 @@ class Analyser:
         img_path = root_path/'test_macro-f1'
         plt.savefig(img_path)
         plt.close()
-        print(img_path.parent.name, 'saved')
+        print(img_path, 'saved')
         
     @staticmethod
     def cmp_analyse(target_folds, img_path, align_step=False):
@@ -193,14 +192,18 @@ class Analyser:
         
         
 if __name__ == '__main__':
-    import argparse
-    parser =  argparse.ArgumentParser()
-    parser.add_argument(
-        '--path', '-p', type=str,
-        default='/public/home/hongy/zpwang/LLaMA-Factory/zpwang/experiment_space/llama27b.pdtb3.level1.NoP'
-    )
-    root_path = parser.parse_args().path
     Analyser.main_analyse(
-        root_path=root_path
+        root_path='/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/example/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
     )
-    exit()
+
+    # import argparse
+    # parser =  argparse.ArgumentParser()
+    # parser.add_argument(
+    #     '--path', '-p', type=str,
+    #     default='/public/home/hongy/zpwang/LLaMA-Factory/zpwang/experiment_space/llama27b.pdtb3.level1.NoP'
+    # )
+    # root_path = parser.parse_args().path
+    # Analyser.main_analyse(
+    #     root_path=root_path
+    # )
+    # exit()

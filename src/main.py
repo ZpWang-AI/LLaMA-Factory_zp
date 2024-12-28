@@ -42,7 +42,7 @@ class LLaMALoraSFTConfig:
 
     # dataset
     dataset_dir:str = LLAMA_FACTORY_DATASET_DIR
-    dataset:str = 'pdtb3.top.2024_06_11_21_41_36.base.clip2048'
+    dataset:str = ''
     eval_dataset:str = ''
     template:str = 'llama3'
     cutoff_len:int = 2048
