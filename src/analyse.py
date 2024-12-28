@@ -7,35 +7,33 @@ from sklearn.metrics import f1_score, accuracy_score
     
 class Analyser:
     @staticmethod
-    def process_predict(fold_path:path):
+    def process_predict(target_dir:path, output_json:path=None):
         '''
         get raw output from fold_path.src_output
 
         get ckpt_num from last part in fold_path split by `.`
         '''
-        json_path = fold_path/'src_output'/'generated_predictions.jsonl'
-        if not json_path.exists():
-            print(fold_path)
-            print('process predict fail\n')
-            return
         
-        with open(fold_path/'src_output'/'all_results.json', 'r', encoding='utf8')as f:
+        with open(target_dir/'src_output'/'all_results.json', 'r', encoding='utf8')as f:
             predict_output = json.load(f)
         predict_runtime = predict_output['predict_runtime']
 
-        ckpt_num = str(fold_path).split('.')[-1]
+        ckpt_num = str(target_dir).split('.')[-1]
         ckpt_num = re.findall(r'\d+', ckpt_num)
         if not ckpt_num:
             ckpt_num = 'final'
         else:
             ckpt_num = ckpt_num[0]
         
-        labels_init, predictions_init = [], []
-        with open(json_path, 'r', encoding='utf8')as f:
+        target_json = target_dir/'src_output'/'generated_predictions.jsonl'
+        assert target_json.exists(), str(target_json)
+        labels_init, predictions_init, prompt_init = [], [], []
+        with open(target_json, 'r', encoding='utf8')as f:
             for line in f.readlines():
                 dic = json.loads(line)
                 labels_init.append(dic['label'])
                 predictions_init.append(dic['predict'])
+                prompt_init.append(dic['prompt'])
 
         label_list = list(set(labels_init))
         # label_list = []
@@ -65,8 +63,9 @@ class Analyser:
                 wrong_outputs.append({
                     'label': labels_init[i],
                     'pred': predictions_init[i],
+                    'prompt': prompt_init[i],
                     'pid': i,
-                    'dir': str(fold_path),
+                    'dir': str(target_dir),
                 })
                     
         acc = (labels == predictions).mean()
@@ -83,8 +82,10 @@ class Analyser:
             'wrong': wrong_outputs,
             'pred_runtime': predict_runtime,
         }
-        with open(fold_path/'result.json', 'w', encoding='utf8')as f:
-            json.dump(res_dic, f, indent=2)
+
+        if output_json is None:
+            output_json = target_dir / 'result.json'
+        auto_dump(res_dic, output_json)
         return res_dic
         # result_string = '\n'.join([
         #     f'tot: {total_num}',
@@ -99,40 +100,32 @@ class Analyser:
         # return 
         
     @staticmethod
-    def process_sft(fold_path:path):
+    def process_sft(target_dir:path):
         '''
         get raw output from fold_path.src_output
         '''
-        output_path = fold_path/'src_output'/'train_results.json'
-        if not output_path.exists():
-            print(output_path)
-            print('process sft fail')
-            return
-        with open(output_path, 'r', encoding='utf8')as f:
-            train_output = json.load(f)
-        with open(fold_path/'nohup.log', 'r', encoding='utf8')as f:
+        target_json = target_dir/'src_output'/'train_results.json'
+        assert target_json.exists(), str(target_json)
+        train_output = auto_load(target_json)
+        with open(target_dir/'src_output'/'nohup.log', 'r', encoding='utf8')as f:
             for line in f.readlines():
                 if 'Num examples' in line:
                     train_output['sample_num'] = line.split('=')[-1].strip()
                 elif 'Total optimization steps' in line:
                     train_output['total_steps'] = line.split('=')[-1].strip()
-                elif 'Number of trainable parameters' in line:
-                    train_output['trainable_parameters'] = line.split('=')[-1].strip()
+                # elif 'Number of trainable parameters' in line:
+                #     train_output['trainable_parameters'] = line.split('=')[-1].strip()
         return train_output
     
     @staticmethod
     def main_analyse(root_path):
         root_path = path(root_path)
         pred_outputs = []
-        for son_fold in sorted(os.listdir(root_path)):
-            if 'predict' in son_fold:
-                son_fold = root_path/son_fold
-                res = Analyser.process_predict(son_fold)
-                pred_outputs.append(res)
-            elif 'sft' in son_fold:
-                son_fold = root_path/son_fold
-                train_output = Analyser.process_sft(son_fold)
-        
+        for son_fold in sorted(listdir_full_path(root_path)):
+            if 'predict' in str(son_fold):
+                pred_outputs.append(Analyser.process_predict(son_fold))
+        train_output = Analyser.process_sft(root_path)
+
         xs, ys, pred_runtime, wrong_output = [], [], [], []
         for p in pred_outputs:
             if not p:
