@@ -22,7 +22,8 @@ if __name__ == "__main__":
         **dfs.arg_dic,
     )
 
-    model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    # model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    model_path = path('/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct').resolve()
     # print(model_path)
     # print(model_path.exists())
     trainer_config = LLaMALoraSFTConfig(
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     
     extra_setting = ExtraSetting(
         rest_mem_mb=10**9,
-        wait_befor_start=3,
+        wait_before_start=3,
         output_scores=False,
         do_dev=False,
     )

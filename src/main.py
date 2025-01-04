@@ -8,7 +8,7 @@ from data_ import *
 @dataclass
 class ExtraSetting:
     rest_mem_mb:int = 1000000
-    wait_befor_start:int = 3
+    wait_before_start:int = 3
     
     output_scores:bool = True
     do_dev:bool = False  # TODO
@@ -115,7 +115,7 @@ class LLaMA:
     def version(self):
         return '.'.join(map(str, self._version_info_list))
 
-    def start(self):
+    def start(self, bg_run=False):
         # =======================================
         # prepare data
         self.trainset_config.start()
@@ -147,33 +147,49 @@ class LLaMA:
         auto_dump(arg_dic, arg_yaml_path)
         # auto_dump(self.extra_setting, final_output_dir/'extra_setting.json')
         auto_dump(self.arg_dic, final_output_dir/'main_config.json')
+        print(f'> log:\n{log_path}')
+        print()
 
         # =======================================
         # start running
-        main_file = path(__file__).parent / 'main_file.py'
-        cmd = (
-            f'nohup python {main_file} '
-            f'{self.cuda_id} {self.extra_setting.rest_mem_mb} {self.extra_setting.wait_befor_start} {arg_yaml_path} '
-            f'> {log_path} 2>&1 &'
-        )
-        # cuda_id, rest_mem_mb, wait_befor_start, arg_yaml_path
-        subprocess.run(
-            cmd, shell=True, text=True,
-        )
+        # main_file = path(__file__).parent / 'main_file.py'
 
+        balancer = CUDABalancer(
+            cuda_ids=[0],
+            rest_mem_mb=self.extra_setting.rest_mem_mb,
+            wait_before_start=self.extra_setting.wait_before_start,
+            start=False,
+        )
+        cmd = (
+            f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
+            f'llamafactory-cli train {arg_yaml_path} '
+            f'> {log_path} 2>&1'
+        )
+        if bg_run:
+            cmd = f'nohup {cmd} &'
         print(cmd+'\n')
 
-        subprocess.run(
-            "ps -aux | grep -v grep | grep -v .vscode-server | grep -v /code-server/ | grep -v /gpustat | grep zp | grep -v 'ps -aux'", 
-            shell=True,
-            text=True,
-        )
-
+        try:
+            balancer.start()
+            subprocess.run(
+                cmd,
+                shell=True,
+                text=True,
+            )
+            balancer.close()
+        except Exception as e:
+            traceback.print_exc()
+            exit()
+        else:
+            # with open()
+            pass
         print()
-        print(f'> log:\n{log_path}')
-        # print()
-        # print()
-        
+
+        # subprocess.run(
+        #     "ps -aux | grep -v grep | grep -v .vscode-server | grep -v /code-server/ | grep -v /gpustat | grep zp | grep -v 'ps -aux'", 
+        #     shell=True,
+        #     text=True,
+        # )
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ D. Temporal
         **dfs.arg_dic,
     )
 
-    model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    model_path = path('/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct').resolve()
     # ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
     # print(model_path)
     # print(model_path.exists())
@@ -73,12 +73,12 @@ D. Temporal
     
     extra_setting = ExtraSetting(
         rest_mem_mb=10**9,
-        wait_befor_start=3,
+        wait_before_start=3,
         output_scores=False,
         do_dev=False,
     )
 
-    target_mem_mb = 20000
+    target_mem_mb = 15000
     cuda_id = CUDAUtils.set_cuda_visible(
         target_mem_mb=target_mem_mb,
         cuda_cnt=1,
@@ -114,9 +114,9 @@ D. Temporal
         ]
         
         main.start()
-        time.sleep(100)
+        time.sleep(10)
 
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/example/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-04_08-08-18._local_test.bs1-8_lr5e-05_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
 
     to_predict_list = []
