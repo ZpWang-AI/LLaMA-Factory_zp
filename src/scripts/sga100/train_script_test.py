@@ -23,7 +23,9 @@ if __name__ == "__main__":
     )
 
     # model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
-    model_path = path('/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct').resolve()
+    model_path = '/public/home/hongy/pretrained_models/Llama-3.2-1B-Instruct'
+    model_path = '/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct'
+    model_path = path(model_path).resolve()
     # print(model_path)
     # print(model_path.exists())
     trainer_config = LLaMALoraSFTConfig(

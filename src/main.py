@@ -163,26 +163,24 @@ class LLaMA:
         cmd = (
             f'CUDA_VISIBLE_DEVICES={self.cuda_id} '
             f'llamafactory-cli train {arg_yaml_path} '
-            f'> {log_path} 2>&1'
+            # f'> {log_path} 2>&1'
+            f'2>&1 | tee {log_path}'
         )
         if bg_run:
             cmd = f'nohup {cmd} &'
         print(cmd+'\n')
 
-        try:
-            balancer.start()
-            subprocess.run(
-                cmd,
-                shell=True,
-                text=True,
-            )
-            balancer.close()
-        except Exception as e:
-            traceback.print_exc()
+        balancer.start()
+        completed = subprocess.run(
+            cmd,
+            shell=True,
+            text=True,
+        )
+        balancer.close()
+        if completed.stderr:
+            print(completed.stderr)
             exit()
-        else:
-            # with open()
-            pass
+            
         print()
 
         # subprocess.run(

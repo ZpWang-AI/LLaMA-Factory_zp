@@ -35,7 +35,9 @@ D. Temporal
         **dfs.arg_dic,
     )
 
-    model_path = path('/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct').resolve()
+    model_path = '/public/home/hongy/pretrained_models/Llama-3.2-1B-Instruct'
+    model_path = '/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct'
+    model_path = path(model_path).resolve()
     # ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
     # print(model_path)
     # print(model_path.exists())
@@ -74,7 +76,7 @@ D. Temporal
     extra_setting = ExtraSetting(
         rest_mem_mb=10**9,
         wait_before_start=3,
-        output_scores=False,
+        output_scores=True,
         do_dev=False,
     )
 
@@ -115,8 +117,10 @@ D. Temporal
         
         main.start()
         time.sleep(10)
+        exit()
 
     ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-04_08-08-18._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-04_09-20-29._local_test.bs1-8_lr5e-05_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
 
     to_predict_list = []
