@@ -5,7 +5,7 @@ from main import *
 if __name__ == "__main__":
     dfs = IDRRDataFrames(
         data_name='pdtb3',
-        data_level='top',
+        data_level='second',
         data_relation='Implicit',
         data_path=ROOT_DIR/'data'/'used'/'pdtb3.p2.csv'
     )
@@ -20,10 +20,20 @@ Argument 2:
 {arg2}
 
 What's the discourse relation between Argument 1 and Argument 2?
-A. Comparison
-B. Contingency
-C. Expansion
-D. Temporal
+A. Comparison.Concession
+B. Comparison.Contrast
+C. Comparison.Similarity
+D. Contingency.Cause
+E. Contingency.Condition
+F. Contingency.Purpose
+G. Expansion.Conjunction
+H. Expansion.Equivalence
+I. Expansion.Instantiation
+J. Expansion.Level-of-detail
+K. Expansion.Manner
+L. Expansion.Substitution
+M. Temporal.Asynchronous
+N. Temporal.Synchronous
 
 '''.strip(),
             "input": '',
@@ -35,7 +45,9 @@ D. Temporal
         **dfs.arg_dic,
     )
 
-    model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    model_path = '/public/home/hongy/pretrained_models/Llama-3.2-1B-Instruct'
+    model_path = '/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct'
+    model_path = path(model_path).resolve()
     # ckpt_path = path('/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-18_07-28-07._local_test.bs1-8_lr5e-05_ep5.succeed/src_output/checkpoint-16').resolve()
     # print(model_path)
     # print(model_path.exists())
@@ -44,6 +56,7 @@ D. Temporal
         # adapter_name_or_path=ckpt_path,
 
         do_train=False,
+        do_eval=False,
         do_predict=True,
         predict_with_generate=True,
         lora_rank=8,
@@ -66,12 +79,14 @@ D. Temporal
         warmup_ratio=0.1,
         bf16=False,
         fp16=True,
+
+        eval_steps=1000000,
     )
     
     extra_setting = ExtraSetting(
         rest_mem_mb=10**9,
-        wait_befor_start=3,
-        output_scores=False,
+        wait_before_start=3,
+        output_scores=True,  # =======
         do_dev=False,
     )
 
@@ -99,24 +114,31 @@ D. Temporal
             testset_config=testset_config,
             trainer_config=trainer_config,
             extra_setting=extra_setting,
-            output_dir=ROOT_DIR/'exp_space'/'Inbox',
-            desc='_local_test',
+            # output_dir=ROOT_DIR/'exp_space'/'Inbox',
+            output_dir=ckpt_dir.parent,
+            desc='_baseline',
             cuda_id=cuda_id,
         )
         main._version_info_list = [
             Datetime_().format_str(2), main.desc, 
-            f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
+            # f'bs{main.trainer_config.per_device_train_batch_size}-{main.trainer_config.gradient_accumulation_steps}_lr{main.trainer_config.learning_rate}_ep{main.trainer_config.num_train_epochs}.pred.ckpt-{ckpt_num}'
+            f'pred.ckpt-{ckpt_num}',
         ]
         
-        main.start(bg_run=True)
-        time.sleep(600)
+        main.start()
+        # time.sleep(10)
+        # exit()
 
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2024-12-23_13-12-16._baseline.bs1-8_lr0.0001_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-07_11-59-07.pdtb3_second._baseline.bs1-8_lr0.0001_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
-    predict(ckpt_dir, 'final')
-    
+
+    to_predict_list = []
     for p in listdir_full_path(ckpt_dir):
         if p.stem.startswith('checkpoint-'):
-            predict(p, p.stem.split('-')[-1])
+            to_predict_list.append((p, p.stem.split('-')[-1]))
 
+    to_predict_list.sort(key=lambda x:int(x[1]))
+    for a,b in to_predict_list:
+        predict(a,b)
+    predict(ckpt_dir, 'final')
         

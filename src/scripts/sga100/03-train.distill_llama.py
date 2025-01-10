@@ -7,7 +7,8 @@ if __name__ == "__main__":
         data_name='pdtb3',
         data_level='top',
         data_relation='Implicit',
-        data_path=ROOT_DIR/'data'/'used'/'pdtb3.p2.csv'
+        # data_path=ROOT_DIR/'data'/'used'/'pdtb3.p2.csv'
+        data_path='/public/home/hongy/zpwang/LLaMA-Factory_zp/data/subtext_llm/pdtb3.gpt-3.5-turbo.subtext_base/pdtb3.gpt-3.5-turbo.subtext_base.csv'
     )
     trainset_config = IDRRDatasetConfig(
         data_split='train',
@@ -19,23 +20,22 @@ Argument 1:
 Argument 2:
 {arg2}
 
-What's the discourse relation between Argument 1 and Argument 2?
-A. Comparison
-B. Contingency
-C. Expansion
-D. Temporal
+What's the implicit meaning between the arguments?
 
 '''.strip(),
             "input": '',
-            "output": '{label11}',
+            "output": '{subtext}',
             "system": "",
             "history": [],
         },
-        desc='base_multi-choice',
+        desc='gpt3.5_distill_llama',
         **dfs.arg_dic,
     )
 
-    model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    # model_path = path('/public/home/hongy/pretrained_models/Llama-3-8B-Instruct').resolve()
+    model_path = '/public/home/hongy/pretrained_models/Llama-3.2-1B-Instruct'
+    model_path = '/public/home/hongy/pretrained_models/Meta-Llama-3-8B-Instruct'
+    model_path = path(model_path).resolve()
     # print(model_path)
     # print(model_path.exists())
     trainer_config = LLaMALoraSFTConfig(
@@ -49,12 +49,12 @@ D. Temporal
 
         template='llama3',
         cutoff_len=2048,
-        # max_samples=40, # ===
+        # max_samples=25,  # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
-        logging_steps=100,
-        save_steps=1000,
+        logging_steps=100,  # ===
+        save_steps=1000,  # ===
         plot_loss=True,
         overwrite_output_dir=True,
 
@@ -65,12 +65,12 @@ D. Temporal
         bf16=False,
         fp16=True,
 
-        eval_steps=10**9,
+        eval_steps=10**9,  # ===
     )
     
     extra_setting = ExtraSetting(
-        rest_mem_mb=10**9,
-        wait_befor_start=3,
+        rest_mem_mb=10000,
+        wait_before_start=3,
         output_scores=False,
         do_dev=False,
     )
@@ -87,7 +87,7 @@ D. Temporal
         trainer_config=trainer_config,
         extra_setting=extra_setting,
         output_dir=ROOT_DIR/'exp_space'/'Inbox',
-        desc='_baseline',
+        desc='_gpt3.5_distill_llama',
         cuda_id=cuda_id,
     )
     main._version_info_list = [
@@ -96,7 +96,7 @@ D. Temporal
         'train'
     ]
     
-    main.start(bg_run=True)
+    main.start()
 
 
         

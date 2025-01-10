@@ -54,7 +54,7 @@ D. Temporal
 
         template='llama3',
         cutoff_len=2048,
-        max_samples=32, # ===
+        # max_samples=32, # ===
         overwrite_cache=True,
         preprocessing_num_workers=16,
 
@@ -76,11 +76,11 @@ D. Temporal
     extra_setting = ExtraSetting(
         rest_mem_mb=10**9,
         wait_before_start=3,
-        output_scores=True,
+        output_scores=True,  # =======
         do_dev=False,
     )
 
-    target_mem_mb = 15000
+    target_mem_mb = 20000
     cuda_id = CUDAUtils.set_cuda_visible(
         target_mem_mb=target_mem_mb,
         cuda_cnt=1,
@@ -106,7 +106,7 @@ D. Temporal
             extra_setting=extra_setting,
             # output_dir=ROOT_DIR/'exp_space'/'Inbox',
             output_dir=ckpt_dir.parent,
-            desc='_local_test',
+            desc='_baseline',
             cuda_id=cuda_id,
         )
         main._version_info_list = [
@@ -116,15 +116,14 @@ D. Temporal
         ]
         
         main.start()
-        time.sleep(10)
-        exit()
+        # time.sleep(10)
+        # exit()
 
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-04_08-08-18._local_test.bs1-8_lr5e-05_ep5.train'
-    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-04_09-20-29._local_test.bs1-8_lr5e-05_ep5.train'
+    ckpt_dir = '/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/Inbox/2025-01-07_08-40-36._baseline.bs1-8_lr0.0001_ep5.train'
     ckpt_dir = path(ckpt_dir) / 'src_output'
 
     to_predict_list = []
-    for p in sorted(listdir_full_path(ckpt_dir)):
+    for p in listdir_full_path(ckpt_dir):
         if p.stem.startswith('checkpoint-'):
             to_predict_list.append((p, p.stem.split('-')[-1]))
 
