@@ -1,4 +1,4 @@
-from _head import *
+from ._head import *
 
 
 @config_args

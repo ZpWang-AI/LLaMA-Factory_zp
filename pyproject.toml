@@ -1,0 +1,22 @@
+[project]
+name = "llama_factory_zp"
+version = "3.0.0"
+description = "custom repo to use llama_factory"
+# requires-python = ">=3.8"
+dependencies = [
+    # "tqdm",
+]
+authors = [
+    { name="Zhipang Wang", email="zhipangwang@gmail.com" },
+]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    # "License :: OSI Approved :: MIT License",
+    # "Operating System :: OS Independent",
+]
+
+
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"

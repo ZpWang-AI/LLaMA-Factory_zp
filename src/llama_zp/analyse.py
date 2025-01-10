@@ -3,7 +3,7 @@ from utils_zp import *
 from sklearn.metrics import f1_score, accuracy_score
 
     
-class Analyser:
+class LLaMA_Analyser:
     @staticmethod
     def process_predict(target_dir:path, output_json:path=None):
         '''
@@ -122,8 +122,8 @@ class Analyser:
         pred_outputs = []
         for son_fold in sorted(listdir_full_path(root_path)):
             if 'ckpt-' in str(son_fold):
-                pred_outputs.append(Analyser.process_predict(son_fold))
-        train_output = Analyser.process_sft(root_path)
+                pred_outputs.append(LLaMA_Analyser.process_predict(son_fold))
+        train_output = LLaMA_Analyser.process_sft(root_path)
 
         xs, ys, pred_runtime, wrong_output = [], [], [], []
         for p in pred_outputs:
@@ -166,7 +166,7 @@ class Analyser:
         for target_fold in target_folds:
             res_json = path(target_fold)/'result.json'
             if not res_json.exists():
-                Analyser.main_analyse(target_fold)
+                LLaMA_Analyser.main_analyse(target_fold)
         
         if not img_path:
             return
@@ -192,7 +192,7 @@ class Analyser:
         
         
 if __name__ == '__main__':
-    Analyser.main_analyse(
+    LLaMA_Analyser.main_analyse(
         root_path='/public/home/hongy/zpwang/LLaMA-Factory_zp/exp_space/example/2024-12-28_06-43-43._local_test.bs1-8_lr5e-05_ep5.train'
     )
 

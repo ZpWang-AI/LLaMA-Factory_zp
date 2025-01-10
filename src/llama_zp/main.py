@@ -1,7 +1,4 @@
-from _head import *
-from utils_zp.cuda import *
-
-from data_ import *
+from .data_ import *
 
 
 @config_args
@@ -77,7 +74,7 @@ class LLaMALoraSFTConfig:
 
 @config_args
 @dataclass
-class LLaMA:
+class LLaMA_zp:
     '''
     final result dir is `self.output_dir/self.version`
 
@@ -191,7 +188,7 @@ class LLaMA:
 
 
 if __name__ == '__main__':
-    sample = LLaMA()
+    sample = LLaMA_zp()
     sample.format_part_in_file(__file__)
     print(sample)
     # sample.start(0, '/home/user/test/zpwang/LLaMA-Factory')
